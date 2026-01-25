@@ -2,7 +2,7 @@
 不會變動的變數存放位置，global
 """
 from enum import Enum
-
+import os
 RECEIVE_CYGNUS_LSL_STREAM = "Cygnus-329018-RawEEG"
 # RECEIVE_UNITY_LSL_STREAM = "UnityMarkerStream"
 TO_UNITY_LSL_STREAM = "MarkerStream"
@@ -26,20 +26,28 @@ is_simulated_unity = False  # use in EEG_Calibration, UnityMarkerReader # 改成
 is_simulated_eeg = True  # use in CygnusEEGReader True, 真正測試要改成 False
 
 SAVE_CSV = True
-BASE_FILE = "D:\\CECNL_lab\\lab_project\\VR\\VR-BCI_beat_saber_python\\main\\"
 
-__REALTIME_BASE_FILE = "D:\\CECNL_lab\\lab_project\\VR\\VR-BCI_beat_saber_python\\main\\real_time_data\\"
-CSV_FILENAME = f"{__REALTIME_BASE_FILE}eeg_record.csv"
-LOG_FILENAME = f"{__REALTIME_BASE_FILE}log.txt"
-PT_DATA_FILENAME = f"{__REALTIME_BASE_FILE}data.pt"
+# --- 路徑設定開始 (使用 os 自動偵測) ---
+_current_dir = os.path.dirname(os.path.abspath(__file__))
+BASE_FILE = os.path.dirname(_current_dir) # 取得上一層 main 資料夾
 
-__EEG_DATA_BASE_FILE = "D:\\CECNL_lab\\lab_project\\VR\\VR-BCI_beat_saber_python\\main\\EEG\\val_data\\"
+__REALTIME_BASE_FILE = os.path.join(BASE_FILE, "real_time_data")
+CSV_FILENAME = os.path.join(__REALTIME_BASE_FILE, "eeg_record.csv")
+LOG_FILENAME = os.path.join(__REALTIME_BASE_FILE, "log.txt")
+PT_DATA_FILENAME = os.path.join(__REALTIME_BASE_FILE, "data.pt")
 
-FT_CSV_FILENAME = f"{__EEG_DATA_BASE_FILE}7_8_9_10_11_12.csv"  # 暫時設定，用於測試
-FT_LOG_FILENAME = f"{__EEG_DATA_BASE_FILE}7.txt"  # 暫時設定，用於測試
+# EEG Validation Data 路徑
+__EEG_DATA_BASE_FILE = os.path.join(BASE_FILE, "EEG", "val_data")
 
-EEG_CHECKPOINT_MAIN_BASE_FILE = "D:\\CECNL_lab\\lab_project\\VR\\VR-BCI_beat_saber_python\\main\\EEG\\checkpoint_main\\"
-EEG_CHECKPOINT_TMP_BASE_FILE = "D:\\CECNL_lab\\lab_project\\VR\\VR-BCI_beat_saber_python\\main\\EEG\\checkpoints\\"
+FT_CSV_FILENAME = os.path.join(__EEG_DATA_BASE_FILE, "7_8_9_10_11_12.csv")
+FT_LOG_FILENAME = os.path.join(__EEG_DATA_BASE_FILE, "7.txt")
+
+# Checkpoint 路徑
+EEG_CHECKPOINT_MAIN_BASE_FILE = os.path.join(BASE_FILE, "EEG", "checkpoint_main")
+EEG_CHECKPOINT_TMP_BASE_FILE = os.path.join(BASE_FILE, "EEG", "checkpoints")
+
+MAIN_CHECKPOINT = os.path.join(EEG_CHECKPOINT_MAIN_BASE_FILE, "model.pth")
+TRAINED_CHECKPOINT = os.path.join(EEG_CHECKPOINT_MAIN_BASE_FILE, "model_trained.pth")
 
 MAIN_CHECKPOINT = f"{EEG_CHECKPOINT_MAIN_BASE_FILE}model.pth"  # 用於 calibration 的模型 # 用在 EEG_Train.py
 TRAINED_CHECKPOINT = f"{EEG_CHECKPOINT_MAIN_BASE_FILE}model_trained.pth"  # 訓練過後的模型 # 改到 global # 這個目前沒有使用了
