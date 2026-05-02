@@ -1,10 +1,12 @@
 # VR_BCI
 
-![](./picture/SystemArchitectureV2.png)
+![](./picture/SystemOverviewAdaptive.png)
 
 啟動步驟: Python 執行 `python/main/main_start.py`，unity 再執行程式碼。
 
+現在有新增 v1.0 release 的版本，不需要 VR heatset，直接下載就連接腦波帽就可以測試。
 
+==python 測試 config 需要把 `is_simulated_eeg` 調成 `False`==
 
 # 環境安裝
 
@@ -45,17 +47,11 @@ torch.cuda.is_available()
 
 # 運行流程圖示
 
-## Unity
+4 個 Trial update 一次，進行 online update
 
-![](./picture/unity_state.png)
+![](./picture/AdaptiveCondition.png)
 
 
-
-## Python
-
-![](./picture/python_run.png)
-
-![](./picture/python_state.png)
 
 # 程式碼說明
 
@@ -81,7 +77,7 @@ torch.cuda.is_available()
     * BeatmapData.cs: 定義地圖的內容 結構化的 class
     * **BeatmapSpawner.cs**: 生成 note 的程式碼
     * **BeatSaberInfoLoader.cs**: 讀取基礎資訊，像是 BPM  之類的，和地圖資訊，之後再由 BeatmapSpawner.cs 處裡，兩個 script 黏合性高，這個 script 決定歌曲開始的時間，開始會有延遲，會對應到 forward.cs 裡面動畫時間。
-    * CalibrationBeatmapSpawner.cs: 繼承 BeatmapSpawner.cs，針對 calibration 進行設計，不讀取 map，而是人工發送
+    * CalibrationBeatmapSpawner.cs: 繼承 BeatmapSpawner.cs，針對 calibration 進行設計，不讀取 map，而是人工發送 (**目前版本這個已經沒有使用**，把 Calibration 變成與 Run 一樣 (使用 BeatmapSpawner，不過多了發送 update model 的指令到 python 那邊，然後 python update)
     * SongInfo.cs: 定義歌曲內容，像是圖片，BPM，歌曲名稱 ... 結構化的 class
   * **forward.cs**: 主要 note (音符) 向前的邏輯，裡面 speed 是裝飾，主要要調動畫的長度，因為目前是設定終點，然後在固定時間內到終點
   * ~~PerpendicularVector.cs~~: 沒用
@@ -132,7 +128,11 @@ torch.cuda.is_available()
 
 ## Python
 
-==注意: Config.py 裡面 is_simulated_eeg，目前為 false，如果要使用腦波帽，請調成 true==
+==再次提醒: Config.py 裡面 is_simulated_eeg，目前為 false，如果要使用腦波帽，請調成 true==
+
+執行程式碼，會根據 unity 那邊選取歌曲，把使用者資料存入到 real_time_data 下面，會根據 run 儲存 csv (data) 與 txt (label)，儲存的 pt 為 calibration 加入到 buffer 裡面的 data。
+
+程式碼執行的時候，在訓練完成模型會拿取 loss 最低的，然後放入到 `EEG\checkpoint_main` 下面，存成 `c_xxx` 的形式。
 
 主要在 `main` 下面
 
@@ -155,10 +155,58 @@ torch.cuda.is_available()
   * some_functions.py: 一些雜 function，目前有兩個，一個為資料字串加上時間 (re string)，另一個為看目前資料夾下面有沒有一樣的文件，如果有就重新命名
   * TCPServer.py: 建立 TCP Server，並可以 broadcast 給 client
   * **UnityMarkerReader.py**: 接收 unity 傳來的東西，並回應，或是做對應處裡
+  * file_pointer_reader.py: 紀錄文件讀取點，在 calibration 不需要重新讀取 CSV，加速運算處裡
 * game_state.py: state machine，用於各個 state 的切換
 * **main_start.py**: 程式碼開始點
 
 tools 為新增歌曲會用到
+
+
+
+## noVR
+
+沒有 VR 版本的 Unity，有放 release 版本提供下載
+
+主要刪除 meta quest 的大多功能，只有保留 voice SDK，其他全部刪除，script 把不需要的基本都刪除了
+
+移除內容: 移除 script `OVR`、`Oculus`、`OVRSimpleJSON` using 的功能
+
+Task: 移除 Meta Quest 相關內容
+
+> 刪除 Meta SDK 資料夾
+
+- 刪除 `Assets/MetaXR/`
+- 刪除 `Assets/Oculus/`
+- 刪除 `Assets/Samples/Meta - Voice SDK - Immersive Voice Commands/`
+- 刪除 `Assets/Samples/Meta XR Interaction SDK/`
+- 刪除 `Assets/XR/`
+- 刪除 `Assets/Plugins/Android/`
+
+> 修改 script
+
+- 清空 `Script/Hand/ControlOVRHand.cs`
+- 清空 `Script/EEG/HandFistChecker.cs`
+- 移除 `Script/BeatSaber/Effect/AutoSaber.cs` 的 Oculus using
+- 移除 `Script/BeatSaber/SongMapProcess/BeatSaberInfoLoader.cs` 的 Meta/OVR using
+- 移除 `Script/Lobby/Song_UI_shower.cs` 的 Meta/OVR using
+- 移除 `Script/LSL/LSLVisualizer.cs` 的 Oculus using
+- 移除 `Script/TCP/TCP_Client.cs` 的 Oculus using
+
+> 其他細節處裡
+
+* SongSelectMenu 把 BeatSaber 模式移除，然後把許多 UI 刪除，並變成使用觸控模式
+* SceneLoaderManager 把轉移場景部分註解 (BeatSaberStage, CalibrationStage (因為後來統一 Calibration 在 MI))
+* 把 GM 裡面 VR 手自動關掉的 event auto saber 相關內容刪除 (對應 invoke 也移除)
+* 加入 eventsystem 和 UI 改成 canvas 然後是貼螢幕的不是 global
+* transition animator 把它變成放在 UI 前面，使用 UI 物件，把 transition 的 canvas sort order 調成 1 (原本 0)。
+* 加入 esc 可以暫停的功能 (MI 遊戲中)
+* 讓遊戲可以在背景也繼續 run，不會因為切到 python 就被打斷
+* final canvas 和 option 都改 UI
+* 刪除到只剩下必要的兩個 scene
+
+有些部分 meta 的 script 還有殘留在 scene 上面，所以會跑出 warining (約 180 個)，這部分以後慢慢移除
+
+
 
 # 其他
 
