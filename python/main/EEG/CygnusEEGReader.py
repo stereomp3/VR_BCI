@@ -27,7 +27,7 @@ class EEGReader():
             return  # 不要重啟
 
         print(f"{config.TAGS.INFO.value} Start read cygnus eeg...")
-        self.filename = rename_file_with_time(config.CSV_FILENAME)
+        self.filename = rename_file_with_time(config.getRunCsvFilename())  # config.CSV_FIELNAME
         self.read_eeg_stop_event.clear()  # 重置 stop_event，允許重新啟動
 
         self.read_eeg_thread = threading.Thread(target=self.read_eeg, daemon=True)  # 每次都重設定 thread
@@ -114,6 +114,15 @@ class EEGReader():
             ]
             self.csv_writer.writerow(header)
             print("[CSV] Start write EEG data to", self.filename)
+
+    def flushCsv(self):
+        """強制將 CSV writer buffer 寫入磁碟，供 pointer-based 讀取前呼叫"""
+        if self.csv_file and not self.csv_file.closed:
+            try:
+                self.csv_file.flush()
+                print(f"{config.TAGS.INFO.value} [DEBUG] flushCsv: CSV buffer 已寫入磁碟")
+            except Exception as e:
+                print(f"{config.TAGS.WARNING.value} flushCsv failed: {e}")
 
     def close_csv_file(self):
         if self.csv_file:

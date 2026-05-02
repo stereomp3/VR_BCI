@@ -4,7 +4,8 @@ import numpy as np
 import torch
 import threading
 from braindecode.models import ShallowFBCSPNet
-from MI_train import load_shallowfbcsp_params
+from main.EEG.models import SCCNet
+from MI_train import load_shallowfbcsp_params, load_sccnet_params
 from torch.utils.data import TensorDataset
 import main.Utils.config as config
 import main.Utils.preprocess as preprocess
@@ -16,8 +17,8 @@ class EEGPredictor:  # 調整模型需要改 self.model，和 self.load_fun 方�
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         # self.load_check_point_path = config.TRAINED_CHECKPOINT
         self.load_check_point_path = global_value.NOW_TRAINED_CHECKPOINT
-        self.model = ShallowFBCSPNet
-        self.load_fun = load_shallowfbcsp_params  # load shallow net parameter
+        self.model = ShallowFBCSPNet  # SCCNet
+        self.load_fun = load_shallowfbcsp_params  # load shallow net parameter, load_sccnet_params
         self.model_arg = self.set_model_arg()
         self.model = self.init_model()
         self.predict_eeg_stop_event = threading.Event()
@@ -55,13 +56,14 @@ class EEGPredictor:  # 調整模型需要改 self.model，和 self.load_fun 方�
         return model
 
     def update_check_point(self, path):
+        print(f"{config.TAGS.INFO.value} update_check_point {path} ...")
         self.load_check_point_path = path
 
     def update_model(self):
         if self.is_updating:  # 防止一直進來，出現 crash 的問題
             return
         self.is_updating = True
-        self.model = ShallowFBCSPNet
+        self.model = ShallowFBCSPNet  # SCCNet
         self.model = self.init_model()
         self.is_updating = False
 
@@ -82,7 +84,7 @@ class EEGPredictor:  # 調整模型需要改 self.model，和 self.load_fun 方�
             if global_value.eeg_buffer.shape[1] >= config.BUFFER_SIZE:
                 if self.is_updating:
                     print(f"{config.TAGS.INFO.value} Waiting for model update ...")
-                    time.sleep(0.5)
+                    time.sleep(0.1)
                     continue
 
                 # shape: (channel, BUFFER_SIZE) -> (channel, sample)
@@ -96,15 +98,15 @@ class EEGPredictor:  # 調整模型需要改 self.model，和 self.load_fun 方�
                 with torch.no_grad():
                     if not self.is_updating:
                         outputs = self.model(x_batch)  # (2,) [-1, 2]
-                    # print(outputs)
-                    prediction = int(torch.argmax(outputs).cpu().item())
-                    # print(f"Prediction: {prediction}")
-                    # print(f"outputs: {outputs}")
-                    # self.outlet.push_sample([prediction])
-                    # 推送到 TCP
-                    if self.tcp_server:
-                        self.tcp_server.broadcast(f"{prediction}")
-                    time.sleep(config.PREDICTION_INTERVAL)
+                        # print(outputs)
+                        prediction = int(torch.argmax(outputs).cpu().item())
+                        # print(f"Prediction: {prediction}")
+                        # print(f"outputs: {outputs}")
+                        # self.outlet.push_sample([prediction])
+                        # 推送到 TCP
+                        if self.tcp_server:
+                            self.tcp_server.broadcast(f"{prediction}")
+                        time.sleep(config.PREDICTION_INTERVAL)
 
 
 # ======== Main ============
