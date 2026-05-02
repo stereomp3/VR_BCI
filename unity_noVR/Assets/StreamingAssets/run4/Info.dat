@@ -1,0 +1,242 @@
+{
+  "_version": "2.0.0",
+  "_songName": "Ori and the Blind Forest - Riding The Wind",
+  "_songSubName": "feat. Rachel Mellis",
+  "_songAuthorName": "Gareth Coker",
+  "_levelAuthorName": "Sp234",
+  "_beatsPerMinute": 130,
+  "_shuffle": 0,
+  "_shufflePeriod": 0.5,
+  "_previewStartTime": 13,
+  "_previewDuration": 15,
+  "_songFilename": "song.ogg",
+  "_coverImageFilename": "cover.jpg",
+  "_environmentName": "PanicEnvironment",
+  "_allDirectionsEnvironmentName": "GlassDesertEnvironment",
+  "_songTimeOffset": 0,
+  "_customData": {
+    "_contributors": [
+      {
+        "_role": "Testplayer",
+        "_name": "TheCzar1994",
+        "_iconPath": "czar.JPG"
+      },
+      {
+        "_role": "Testplayer",
+        "_name": "Scarladore",
+        "_iconPath": "Scar.PNG"
+      },
+      {
+        "_role": "Testplayer",
+        "_name": "Spinny",
+        "_iconPath": "Spin.PNG"
+      },
+      {
+        "_role": "Testplayer",
+        "_name": "Ori Jinn",
+        "_iconPath": "Jin.PNG"
+      },
+      {
+        "_role": "Testplayer",
+        "_name": "ramenator05",
+        "_iconPath": "Ram.PNG"
+      },
+      {
+        "_role": "Mapper",
+        "_name": "Sp234",
+        "_iconPath": "me.JPG"
+      }
+    ],
+    "_editors": {
+      "_lastEditedBy": "ChroMapper",
+      "MMA2": {
+        "version": "4.8.4"
+      },
+      "ChroMapper": {
+        "version": "0.8.454"
+      }
+    }
+  },
+  "_difficultyBeatmapSets": [
+    {
+      "_beatmapCharacteristicName": "Standard",
+      "_difficultyBeatmaps": [
+        {
+          "_difficulty": "Easy",
+          "_difficultyRank": 1,
+          "_beatmapFilename": "EasyStandard.dat",
+          "_noteJumpMovementSpeed": 10,
+          "_noteJumpStartBeatOffset": 0.7,
+          "_customData": {
+            "_difficultyLabel": "Glide The Winds",
+            "_editorOffset": 0,
+            "_editorOldOffset": 0,
+            "_suggestions": [
+              "Chroma"
+            ],
+            "_obstacleColor": {
+              "r": 0.787,
+              "g": 0.544,
+              "b": 0.183
+            },
+            "_colorRight": {
+              "r": 0.758,
+              "g": 0.597,
+              "b": 0.156
+            },
+            "_colorLeft": {
+              "r": 0.147,
+              "g": 0.542,
+              "b": 0.179
+            }
+          }
+        },
+        {
+          "_difficulty": "Normal",
+          "_difficultyRank": 3,
+          "_beatmapFilename": "NormalStandard.dat",
+          "_noteJumpMovementSpeed": 11,
+          "_noteJumpStartBeatOffset": 0.45,
+          "_customData": {
+            "_difficultyLabel": "Traverse The Thorns",
+            "_editorOffset": 0,
+            "_editorOldOffset": 0,
+            "_suggestions": [
+              "Chroma"
+            ],
+            "_obstacleColor": {
+              "r": 0.787,
+              "g": 0.544,
+              "b": 0.183
+            },
+            "_colorRight": {
+              "r": 0.758,
+              "g": 0.597,
+              "b": 0.156
+            },
+            "_colorLeft": {
+              "r": 0.147,
+              "g": 0.542,
+              "b": 0.179
+            }
+          }
+        },
+        {
+          "_difficulty": "Hard",
+          "_difficultyRank": 5,
+          "_beatmapFilename": "HardStandard.dat",
+          "_noteJumpMovementSpeed": 13,
+          "_noteJumpStartBeatOffset": 0,
+          "_customData": {
+            "_difficultyLabel": "Solve the Puzzles",
+            "_editorOffset": 0,
+            "_editorOldOffset": 0,
+            "_suggestions": [
+              "Chroma"
+            ],
+            "_obstacleColor": {
+              "r": 0.787,
+              "g": 0.544,
+              "b": 0.183
+            },
+            "_colorRight": {
+              "r": 0.758,
+              "g": 0.597,
+              "b": 0.156
+            },
+            "_colorLeft": {
+              "r": 0.147,
+              "g": 0.542,
+              "b": 0.179
+            }
+          }
+        },
+        {
+          "_difficulty": "Expert",
+          "_difficultyRank": 7,
+          "_beatmapFilename": "ExpertStandard.dat",
+          "_noteJumpMovementSpeed": 15,
+          "_noteJumpStartBeatOffset": -0.25,
+          "_customData": {
+            "_difficultyLabel": "Fight The Wildlife",
+            "_editorOffset": 0,
+            "_editorOldOffset": 0,
+            "_suggestions": [
+              "Chroma"
+            ],
+            "_obstacleColor": {
+              "r": 0.787,
+              "g": 0.544,
+              "b": 0.183
+            },
+            "_envColorRightBoost": {
+              "r": 0.563,
+              "g": 0.564,
+              "b": 0.556
+            },
+            "_envColorLeftBoost": {
+              "r": 0,
+              "g": 0,
+              "b": 0
+            },
+            "_envColorRight": {
+              "r": 1,
+              "g": 0,
+              "b": 0
+            },
+            "_envColorLeft": {
+              "r": 0.758,
+              "g": 0.597,
+              "b": 0.156
+            },
+            "_colorRight": {
+              "r": 0.758,
+              "g": 0.597,
+              "b": 0.156
+            },
+            "_colorLeft": {
+              "r": 0.147,
+              "g": 0.542,
+              "b": 0.179
+            }
+          }
+        }
+      ]
+    },
+    {
+      "_beatmapCharacteristicName": "OneSaber",
+      "_difficultyBeatmaps": [
+        {
+          "_difficulty": "Expert",
+          "_difficultyRank": 7,
+          "_beatmapFilename": "ExpertOneSaber.dat",
+          "_noteJumpMovementSpeed": 15,
+          "_noteJumpStartBeatOffset": -0.25,
+          "_customData": {
+            "_difficultyLabel": "Sein - Trusty Wingman",
+            "_editorOffset": 0,
+            "_editorOldOffset": 0,
+            "_suggestions": [
+              "Chroma"
+            ],
+            "_obstacleColor": {
+              "r": 0.092,
+              "g": 0.309,
+              "b": 1
+            },
+            "_colorRight": {
+              "r": 0.092,
+              "g": 0.309,
+              "b": 1
+            },
+            "_colorLeft": {
+              "r": 0.092,
+              "g": 0.309,
+              "b": 1
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

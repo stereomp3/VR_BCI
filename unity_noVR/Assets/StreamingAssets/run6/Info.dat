@@ -1,0 +1,87 @@
+{
+  "_version": "2.0.0",
+  "_songName": "Dashing and Bashing",
+  "_songSubName": "Ori and the Will of the Wisps",
+  "_songAuthorName": "Gareth Coker",
+  "_levelAuthorName": "Rztrz",
+  "_beatsPerMinute": 92,
+  "_shuffle": 0,
+  "_shufflePeriod": 0.5,
+  "_previewStartTime": 12,
+  "_previewDuration": 10,
+  "_songFilename": "song.ogg",
+  "_coverImageFilename": "cover.jpg",
+  "_environmentName": "TriangleEnvironment",
+  "_songTimeOffset": 0,
+  "_customData": {
+    "_editorSettings": {
+      "enabledFastWalls": false,
+      "modSettings": {
+        "customColors": {
+          "isEnabled": true,
+          "colorLeft": "#f21212",
+          "colorLeftOverdrive": 0,
+          "colorRight": "#006cff",
+          "colorRightOverdrive": 0,
+          "envColorLeft": "#14f212",
+          "envColorLeftOverdrive": 0,
+          "envColorRight": "#9affef",
+          "envColorRightOverdrive": 0,
+          "obstacleColor": "#3680c0",
+          "obstacleColorOverdrive": 0
+        },
+        "mappingExtensions": {
+          "isEnabled": false,
+          "numRows": 3,
+          "numCols": 4,
+          "colWidth": 1,
+          "rowHeight": 1
+        }
+      }
+    },
+    "_editor": "beatmapper"
+  },
+  "_difficultyBeatmapSets": [
+    {
+      "_beatmapCharacteristicName": "Standard",
+      "_difficultyBeatmaps": [
+        {
+          "_difficulty": "ExpertPlus",
+          "_difficultyRank": 9,
+          "_beatmapFilename": "ExpertPlus.dat",
+          "_noteJumpMovementSpeed": 18,
+          "_noteJumpStartBeatOffset": 0,
+          "_customData": {
+            "_editorOffset": 1120,
+            "_requirements": [],
+            "_obstacleColor": {
+              "r": 0.21176470588235294,
+              "g": 0.5019607843137255,
+              "b": 0.7529411764705882
+            },
+            "_envColorRight": {
+              "r": 0.6039215686274509,
+              "g": 1,
+              "b": 0.9372549019607843
+            },
+            "_envColorLeft": {
+              "r": 0.0784313725490196,
+              "g": 0.9490196078431372,
+              "b": 0.07058823529411765
+            },
+            "_colorRight": {
+              "r": 0,
+              "g": 0.4235294117647059,
+              "b": 1
+            },
+            "_colorLeft": {
+              "r": 0.9490196078431372,
+              "g": 0.07058823529411765,
+              "b": 0.07058823529411765
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,32 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 164437c82c0c88a4ab4bf268cb917193, type: 3}
+  m_Name: LckSettings
+  m_EditorClassIdentifier: 
+  TrackingId: 201e20ef-b541-4d06-add6-da88bbcad8e5
+  GameName: MyGame
+  RecordingFilenamePrefix: MyGamePrefix
+  RecordingAlbumName: MyGameAlbum
+  RecordingDateSuffixFormat: yyyy-MM-dd_HH-mm-ss
+  AddPermissionsToAndroidManifest: 1
+  EnableStencilSupport: 1
+  BaseLogLevel: 1
+  MicrophoneLogLevel: 1
+  NativeLogLevel: 2
+  ShowOpenGLMessages: 0
+  GameAudioSyncTimeOffsetInMS: 250
+  AudioLimiter: 0
+  FallbackSampleRate: 48000
+  ImageCaptureFileFormat: 3
+  AllowLocationTelemetry: 1
+  AllowDeviceTelemetry: 1
+  TriggerEnterTag: Hand

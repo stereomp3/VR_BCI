@@ -1,0 +1,56 @@
+{
+  "_version": "2.0.0",
+  "_songName": "Light of Nibel",
+  "_songSubName": "(feat. Aeralie Brighton)",
+  "_songAuthorName": "Gareth Coker",
+  "_levelAuthorName": "AlephCubed",
+  "_beatsPerMinute": 80,
+  "_shuffle": 0,
+  "_shufflePeriod": 0.5,
+  "_previewStartTime": 90,
+  "_previewDuration": 14,
+  "_songFilename": "song.ogg",
+  "_coverImageFilename": "Ori and the Blind Forest.jpg",
+  "_environmentName": "TriangleEnvironment",
+  "_allDirectionsEnvironmentName": "GlassDesertEnvironment",
+  "_songTimeOffset": 0,
+  "_customData": {
+    "_contributors": [
+      {
+        "_role": "Creator",
+        "_name": "AlephCubed",
+        "_iconPath": "PrifilePicSquare.png"
+      },
+      {
+        "_role": "Composer",
+        "_name": "Gareth Coker",
+        "_iconPath": "Gareth Coker.jpg"
+      },
+      {
+        "_role": "Featured Artist",
+        "_name": "Aeralie Brighton",
+        "_iconPath": "jOQdnWnR_400x400.jpg"
+      }
+    ],
+    "_editors": {
+      "_lastEditedBy": "ChroMapper",
+      "ChroMapper": {
+        "version": "0.8.0"
+      }
+    }
+  },
+  "_difficultyBeatmapSets": [
+    {
+      "_beatmapCharacteristicName": "Standard",
+      "_difficultyBeatmaps": [
+        {
+          "_difficulty": "Hard",
+          "_difficultyRank": 5,
+          "_beatmapFilename": "HardStandard.dat",
+          "_noteJumpMovementSpeed": 14,
+          "_noteJumpStartBeatOffset": 0
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,74 @@
+{
+  "version": "4.0.1",
+  "_songName": "Kyokou no Haikyo",
+  "_songSubName": "",
+  "_songAuthorName": "maritumix",
+  "_levelAuthorName": "maritumix",
+  "_beatsPerMinute": 87,
+  "_songFilename": "song.ogg",
+  "_coverImageFilename": "cover.jpg",
+  "song": {
+    "title": "Kyokou no Haikyo",
+    "subTitle": "",
+    "author": "maritumix"
+  },
+  "audio": {
+    "songFilename": "song.ogg",
+    "songDuration": 225.999,
+    "audioDataFilename": "AudioData.dat",
+    "bpm": 87.0,
+    "lufs": 0.0,
+    "previewStartTime": 2.75,
+    "previewDuration": 12.5
+  },
+  "songPreviewFilename": "song.ogg",
+  "coverImageFilename": "cover.jpg",
+  "environmentNames": [
+    "EDMEnvironment"
+  ],
+  "colorSchemes": [
+    {
+      "overrideNotes": false,
+      "overrideLights": true,
+      "colorSchemeName": "More Blue",
+      "saberAColor": "A1A1A1FF",
+      "saberBColor": "2DB2E0FF",
+      "environmentColor0": "00B7AAFF",
+      "environmentColor1": "0065B7FF",
+      "obstaclesColor": "2DB2E0FF",
+      "environmentColor0Boost": "0FBC88FF",
+      "environmentColor1Boost": "004CD2FF"
+    }
+  ],
+  "difficultyBeatmaps": [
+    {
+      "characteristic": "Standard",
+      "difficulty": "ExpertPlus",
+      "beatmapAuthors": {
+        "mappers": [
+          "XAce1337manX"
+        ],
+        "lighters": [
+          "XAce1337manX"
+        ]
+      },
+      "environmentNameIdx": 0,
+      "beatmapColorSchemeIdx": 0,
+      "noteJumpMovementSpeed": 14.0,
+      "noteJumpStartBeatOffset": 0.3,
+      "beatmapDataFilename": "ExpertPlusStandard.dat",
+      "lightshowDataFilename": "LightsFor-ExpertPlusStandard.dat",
+      "customData": {
+        "difficultyLabel": "Genetics of the Unconscious"
+      }
+    }
+  ],
+  "customData": {
+    "editors": {
+      "lastEditedBy": "ChroMapper",
+      "ChroMapper": {
+        "version": "0.12.844"
+      }
+    }
+  }
+}

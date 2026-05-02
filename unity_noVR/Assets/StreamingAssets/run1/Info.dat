@@ -1,0 +1,323 @@
+{
+  "_version": "2.0.0",
+  "_songName": "Ori and the Blind forest- Climbing The Ginso Tree",
+  "_songSubName": "",
+  "_songAuthorName": "Gareth Coker",
+  "_levelAuthorName": "Sp234",
+  "_beatsPerMinute": 160,
+  "_shuffle": 0,
+  "_shufflePeriod": 0.5,
+  "_previewStartTime": 174.75,
+  "_previewDuration": 30,
+  "_songFilename": "song.ogg",
+  "_coverImageFilename": "cover.jpg",
+  "_environmentName": "PanicEnvironment",
+  "_songTimeOffset": 0,
+  "_customData": {
+    "_contributors": [
+      {
+        "_role": "Testplayer",
+        "_name": "TheCzar1994",
+        "_iconPath": "czar.JPG"
+      },
+      {
+        "_role": "Testplayer",
+        "_name": "Vaser888",
+        "_iconPath": "vaser.JPG"
+      },
+      {
+        "_role": "Testplayer",
+        "_name": "Kaltern",
+        "_iconPath": "kal.JPG"
+      },
+      {
+        "_role": "Mapper",
+        "_name": "Sp234",
+        "_iconPath": "sp.JPG"
+      }
+    ],
+    "_editors": {
+      "_lastEditedBy": "MMA2",
+      "MMA2": {
+        "version": "4.8.4"
+      }
+    }
+  },
+  "_difficultyBeatmapSets": [
+    {
+      "_beatmapCharacteristicName": "Standard",
+      "_difficultyBeatmaps": [
+        {
+          "_difficulty": "Easy",
+          "_difficultyRank": 1,
+          "_beatmapFilename": "EasyStandard.dat",
+          "_noteJumpMovementSpeed": 10,
+          "_noteJumpStartBeatOffset": -0.5,
+          "_customData": {
+            "_difficultyLabel": "Plan the climb",
+            "_editorOffset": 0,
+            "_editorOldOffset": 0,
+            "_warnings": [],
+            "_information": [
+              "Reaching the bottom of the Ginso Tree, Ori examines the tree and discover it riddled with hostile inhabitants, from sharp thorns to deadly birds! but one cannot let fear stop him from the most saving the forest which he calls home ! "
+            ],
+            "_suggestions": [],
+            "_requirements": [],
+            "_envColorRight": {
+              "r": 0.5,
+              "g": 0.3400000035762787,
+              "b": 0.05000000074505806
+            },
+            "_envColorLeft": {
+              "r": 0.07000000029802322,
+              "g": 0.3799999952316284,
+              "b": 0.05000000074505806
+            },
+            "_envColorLeftBoost": {
+              "r": 0.550000011920929,
+              "g": 0.05000000074505806,
+              "b": 0.5199999809265137
+            },
+            "_envColorRightBoost": {
+              "r": 0.06599999964237213,
+              "g": 0.6600000262260437,
+              "b": 0.7200000286102295
+            },
+            "_obstacleColor": {
+              "r": 0.07000000029802322,
+              "g": 0.47999998927116394,
+              "b": 0.47999998927116394
+            },
+            "_colorLeft": {
+              "r": 0.07000000029802322,
+              "g": 0.3799999952316284,
+              "b": 0.05000000074505806
+            },
+            "_colorRight": {
+              "r": 0.5,
+              "g": 0.3400000035762787,
+              "b": 0.05000000074505806
+            }
+          }
+        },
+        {
+          "_difficulty": "Normal",
+          "_difficultyRank": 3,
+          "_beatmapFilename": "NormalStandard.dat",
+          "_noteJumpMovementSpeed": 11,
+          "_noteJumpStartBeatOffset": -0.9,
+          "_customData": {
+            "_difficultyLabel": "Traverse the thorns",
+            "_editorOffset": 0,
+            "_editorOldOffset": 0,
+            "_warnings": [],
+            "_information": [
+              "Starting the climbing, the agility possesed by Ori helps him traverse the thorns mostly unscathed."
+            ],
+            "_suggestions": [],
+            "_requirements": [],
+            "_envColorLeftBoost": {
+              "r": 0.550000011920929,
+              "g": 0.05000000074505806,
+              "b": 0.5199999809265137
+            },
+            "_envColorRightBoost": {
+              "r": 0.06599999964237213,
+              "g": 0.6600000262260437,
+              "b": 0.7200000286102295
+            },
+            "_envColorLeft": {
+              "r": 0.07000000029802322,
+              "g": 0.3799999952316284,
+              "b": 0.05000000074505806
+            },
+            "_colorLeft": {
+              "r": 0.07000000029802322,
+              "g": 0.3799999952316284,
+              "b": 0.05000000074505806
+            },
+            "_envColorRight": {
+              "r": 0.5,
+              "g": 0.3400000035762787,
+              "b": 0.05000000074505806
+            },
+            "_colorRight": {
+              "r": 0.5,
+              "g": 0.3400000035762787,
+              "b": 0.05000000074505806
+            },
+            "_obstacleColor": {
+              "r": 0.07000000029802322,
+              "g": 0.47999998927116394,
+              "b": 0.47999998927116394
+            }
+          }
+        },
+        {
+          "_difficulty": "Hard",
+          "_difficultyRank": 5,
+          "_beatmapFilename": "HardStandard.dat",
+          "_noteJumpMovementSpeed": 13,
+          "_noteJumpStartBeatOffset": 0.55,
+          "_customData": {
+            "_difficultyLabel": "Fight the wildlife",
+            "_editorOffset": 0,
+            "_editorOldOffset": 0,
+            "_warnings": [],
+            "_information": [
+              "Climbing further the Ginso Tree Ori has encountered a batch of angry wild birds and spitting moles ! with the power of Nibel and the his companion Sein, he will surely overcome them !"
+            ],
+            "_suggestions": [],
+            "_requirements": [],
+            "_envColorLeftBoost": {
+              "r": 0.550000011920929,
+              "g": 0.05000000074505806,
+              "b": 0.5199999809265137
+            },
+            "_envColorRightBoost": {
+              "r": 0.06599999964237213,
+              "g": 0.6600000262260437,
+              "b": 0.7200000286102295
+            },
+            "_envColorLeft": {
+              "r": 0.07000000029802322,
+              "g": 0.3799999952316284,
+              "b": 0.07000000029802322
+            },
+            "_colorLeft": {
+              "r": 0.07000000029802322,
+              "g": 0.3799999952316284,
+              "b": 0.05000000074505806
+            },
+            "_envColorRight": {
+              "r": 0.5,
+              "g": 0.3400000035762787,
+              "b": 0.05000000074505806
+            },
+            "_colorRight": {
+              "r": 0.5,
+              "g": 0.3400000035762787,
+              "b": 0.05000000074505806
+            },
+            "_obstacleColor": {
+              "r": 0.07000000029802322,
+              "g": 0.47999998927116394,
+              "b": 0.47999998927116394
+            }
+          }
+        },
+        {
+          "_difficulty": "Expert",
+          "_difficultyRank": 7,
+          "_beatmapFilename": "ExpertStandard.dat",
+          "_noteJumpMovementSpeed": 15,
+          "_noteJumpStartBeatOffset": 0.17,
+          "_customData": {
+            "_difficultyLabel": "Reach the heart",
+            "_editorOffset": 0,
+            "_editorOldOffset": 0,
+            "_warnings": [],
+            "_information": [
+              "Escalating the final veins of the Ginso Tree to it's heart, where the thorns density run thick, enemys at large and much at puzzles complex - Ori can see the heart from the horizon and rushes through !"
+            ],
+            "_suggestions": [],
+            "_requirements": [],
+            "_envColorLeftBoost": {
+              "r": 0.550000011920929,
+              "g": 0.05000000074505806,
+              "b": 0.5199999809265137
+            },
+            "_envColorRightBoost": {
+              "r": 0.06599999964237213,
+              "g": 0.6600000262260437,
+              "b": 0.7200000286102295
+            },
+            "_envColorLeft": {
+              "r": 0.07000000029802322,
+              "g": 0.3799999952316284,
+              "b": 0.05000000074505806
+            },
+            "_colorLeft": {
+              "r": 0.07000000029802322,
+              "g": 0.3799999952316284,
+              "b": 0.05000000074505806
+            },
+            "_envColorRight": {
+              "r": 0.5,
+              "g": 0.3400000035762787,
+              "b": 0.05000000074505806
+            },
+            "_colorRight": {
+              "r": 0.5,
+              "g": 0.3400000035762787,
+              "b": 0.05000000074505806
+            },
+            "_obstacleColor": {
+              "r": 0.07000000029802322,
+              "g": 0.47999998927116394,
+              "b": 0.47999998927116394
+            }
+          }
+        }
+      ]
+    },
+    {
+      "_beatmapCharacteristicName": "OneSaber",
+      "_difficultyBeatmaps": [
+        {
+          "_difficulty": "Expert",
+          "_difficultyRank": 7,
+          "_beatmapFilename": "ExpertOneSaber.dat",
+          "_noteJumpMovementSpeed": 15,
+          "_noteJumpStartBeatOffset": 0.17,
+          "_customData": {
+            "_difficultyLabel": "Sein - Puzzle solver",
+            "_editorOffset": 0,
+            "_editorOldOffset": 0,
+            "_warnings": [],
+            "_information": [
+              "Sein, Oris companion and spirit guardian posses the wisdom of the spirit, one which insures that the puzzles presented by the Ginso Tree to hinder it's climbers be just another small detour for Ori."
+            ],
+            "_suggestions": [],
+            "_requirements": [],
+            "_colorLeft": {
+              "r": 0.07000000029802322,
+              "g": 0.30000001192092896,
+              "b": 0.800000011920929
+            },
+            "_colorRight": {
+              "r": 0.07000000029802322,
+              "g": 0.30000001192092896,
+              "b": 0.800000011920929
+            },
+            "_envColorRightBoost": {
+              "r": 0.06599999964237213,
+              "g": 0.6600000262260437,
+              "b": 0.7200000286102295
+            },
+            "_envColorRight": {
+              "r": 0.5,
+              "g": 0.3400000035762787,
+              "b": 0.05000000074505806
+            },
+            "_envColorLeft": {
+              "r": 0.07000000029802322,
+              "g": 0.3799999952316284,
+              "b": 0.05000000074505806
+            },
+            "_envColorLeftBoost": {
+              "r": 0.550000011920929,
+              "g": 0.05000000074505806,
+              "b": 0.5199999809265137
+            },
+            "_obstacleColor": {
+              "r": 0.07000000029802322,
+              "g": 0.47999998927116394,
+              "b": 0.47999998927116394
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
