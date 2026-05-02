@@ -206,7 +206,8 @@ Task: 移除 Meta Quest 相關內容
 
 有些部分 meta 的 script 還有殘留在 scene 上面，所以會跑出 warining (約 180 個)，這部分以後慢慢移除
 
-
+<iframe width="420" height="345" src="https://stereomp3.github.io/VR_BCI_Video/20260502/noVR_test.mp4" allowfullscreen >
+        </iframe>
 
 # 其他
 
