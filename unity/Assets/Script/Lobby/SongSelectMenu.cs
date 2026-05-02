@@ -32,6 +32,8 @@ public class SongSelectMenu : MonoBehaviour
     public AudioSource audioSource;  // 存現在播放的內容 // 在 Song_UI_shower.cs 切換
     public AudioSource nextAudioSource;  // 下一個播放的內容 // 在 Song_UI_shower.cs 切換 // 目前沒有用到
     public LevelData levelData = new LevelData { level = "MI" };  // 紀錄遊戲模式，在 Song_UI_shower select 的時候會設定為 MI，改模式在下方的 button 觸發會改成 button 名稱
+    private TCP_Client sender;
+
     void Awake()
     {
         if (instance == null)
@@ -52,6 +54,7 @@ public class SongSelectMenu : MonoBehaviour
         //Hook events
         startButton.onClick.AddListener(StartGame);
         save_game_level();
+        sender = TCP_Client.instance;
     }
 
     // 當按鈕被點擊時觸發，並將 Button 傳遞給方法 // 主要為 中間選擇 level 的 button 使用
@@ -86,9 +89,13 @@ public class SongSelectMenu : MonoBehaviour
     {
         if(levelData.level == Config.level_ui_strings[(int)Level.MI])
         {
-            if(song.name == Config.Calibration) SceneLoaderManager.instance.LoadCalibrationStage();
-            else SceneLoaderManager.instance.LoadMIStage();
+            sender.send_string_to_python(song.name);
 
+            if (song.name == Config.Calibration) GameDataManager.instance.is_calibration = true;    
+
+            SceneLoaderManager.instance.LoadMIStage();
+            /*if (song.name == Config.Calibration) SceneLoaderManager.instance.LoadCalibrationStage();
+            else SceneLoaderManager.instance.LoadMIStage();*/
         }
         else
         {
@@ -123,8 +130,10 @@ public class SongSelectMenu : MonoBehaviour
                     else cube_num.text = "Cubes: 0";
                 }
                 // if (index == 0) cube_num.text = "MI trial: " + beatmap.notes.Count.ToString();
-                if (song.name == Config.Calibration) cube_num.text = "MI trial: 20";
-                else if (index == 0) cube_num.text = "MI trial: " + ((int)(beatmap.notes.Count / (Config.group_note_num + 1)) + 1).ToString();
+                // if (song.name == Config.Calibration) cube_num.text = "MI trial: 20";
+                // else if (index == 0) cube_num.text = "MI trial: " + ((int)(beatmap.notes.Count / (Config.group_note_num + 1)) + 1).ToString();
+                if (song.name == Config.Calibration) cube_num.text = "MI trial: 40";
+                else if (index == 0) cube_num.text = "MI trial: " + ((int)(beatmap.notes.Count / (Config.group_note_num))).ToString();  // 40
                 else cube_num.text = "Cubes: " + beatmap.notes.Count.ToString();
 
                 /*BeatmapData data = JsonConvert.DeserializeObject<BeatmapData>(json);
@@ -148,7 +157,7 @@ public class SongSelectMenu : MonoBehaviour
             }
         }));
     }
-    // 把 BeatmapSpawner.cs 裡面的 GroupNotesByRules，function 做更改，改成只回傳 int 的 function，並於畫面中顯示
+    // 把 BeatmapSpawner.cs 裡面的 GroupNotesByRules，function 做更改，改成只回傳 int 的 function，並於畫面中顯示，目前沒用到
     public int GetGroupCountByRules(List<OldNote> sourceNotes, int n, float bpm)
     {
         float beatsPerSecond = bpm / 60f;

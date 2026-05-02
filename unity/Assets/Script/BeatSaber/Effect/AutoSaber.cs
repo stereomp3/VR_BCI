@@ -50,7 +50,7 @@ public class AutoSaber : MonoBehaviour
     public IEnumerator MoveAndSwingSaberToNote(int note_x, int note_y, int note_direction, bool use_brain_to_controll) // 目前在 BeatmapSpawner 觸發 (update)
     {
         yield return new WaitForSeconds(delay_time);
-        if (note_x == 1) saber = saberL;
+        if (note_x == 1) saber = saberL; // 1 是左邊 2 是右邊
         else saber = saberR;
         
         // 1. 計算世界座標位置
@@ -95,12 +95,20 @@ public class AutoSaber : MonoBehaviour
                     {
                         saber = saberL;
                         if (note_x == 1) correct_hit += 1;
-                        else wrong_hit += 1;
+                        else
+                        {
+                            wrong_hit += 1;
+                            break; // 揮砍錯誤跳過 // 只提供正向 feedback
+                        }
                     }
                     else
                     {
                         saber = saberR;
-                        if (note_x == 1) wrong_hit += 1;
+                        if (note_x == 1)
+                        {
+                            wrong_hit += 1;
+                            break; // 揮砍錯誤跳過 // 只提供正向 feedback
+                        }
                         else correct_hit += 1;
                     }
 

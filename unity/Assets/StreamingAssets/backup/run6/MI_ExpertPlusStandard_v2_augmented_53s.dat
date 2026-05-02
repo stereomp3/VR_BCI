@@ -1,0 +1,1609 @@
+{
+  "_version": "2.2.0",
+  "_customData": {},
+  "_notes": [
+    {
+      "_time": 4,
+      "_lineIndex": 1,
+      "_lineLayer": 0,
+      "_type": 0,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 4.8982758620689655,
+      "_lineIndex": 1,
+      "_lineLayer": 0,
+      "_type": 0,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 6.348275862068965,
+      "_lineIndex": 1,
+      "_lineLayer": 0,
+      "_type": 0,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 7.798275862068966,
+      "_lineIndex": 1,
+      "_lineLayer": 0,
+      "_type": 0,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 9.248275862068965,
+      "_lineIndex": 1,
+      "_lineLayer": 0,
+      "_type": 0,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 12,
+      "_lineIndex": 1,
+      "_lineLayer": 0,
+      "_type": 0,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 13.174137931034483,
+      "_lineIndex": 1,
+      "_lineLayer": 0,
+      "_type": 0,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 14.624137931034483,
+      "_lineIndex": 1,
+      "_lineLayer": 0,
+      "_type": 0,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 16.074137931034482,
+      "_lineIndex": 1,
+      "_lineLayer": 0,
+      "_type": 0,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 17.52413793103448,
+      "_lineIndex": 1,
+      "_lineLayer": 0,
+      "_type": 0,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 20,
+      "_lineIndex": 2,
+      "_lineLayer": 0,
+      "_type": 1,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 21.45,
+      "_lineIndex": 2,
+      "_lineLayer": 0,
+      "_type": 1,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 22.9,
+      "_lineIndex": 2,
+      "_lineLayer": 0,
+      "_type": 1,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 24.35,
+      "_lineIndex": 2,
+      "_lineLayer": 0,
+      "_type": 1,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 25.8,
+      "_lineIndex": 2,
+      "_lineLayer": 0,
+      "_type": 1,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 28,
+      "_lineIndex": 2,
+      "_lineLayer": 0,
+      "_type": 1,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 29.036206896551725,
+      "_lineIndex": 2,
+      "_lineLayer": 0,
+      "_type": 1,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 30.486206896551725,
+      "_lineIndex": 2,
+      "_lineLayer": 0,
+      "_type": 1,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 31.936206896551724,
+      "_lineIndex": 2,
+      "_lineLayer": 0,
+      "_type": 1,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 33.38620689655173,
+      "_lineIndex": 2,
+      "_lineLayer": 0,
+      "_type": 1,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 36,
+      "_lineIndex": 2,
+      "_lineLayer": 0,
+      "_type": 1,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 37.31206896551724,
+      "_lineIndex": 2,
+      "_lineLayer": 0,
+      "_type": 1,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 38.762068965517244,
+      "_lineIndex": 2,
+      "_lineLayer": 0,
+      "_type": 1,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 40.21206896551724,
+      "_lineIndex": 2,
+      "_lineLayer": 0,
+      "_type": 1,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 41.66206896551724,
+      "_lineIndex": 2,
+      "_lineLayer": 0,
+      "_type": 1,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 44,
+      "_lineIndex": 2,
+      "_lineLayer": 0,
+      "_type": 1,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 44.89827586206897,
+      "_lineIndex": 2,
+      "_lineLayer": 0,
+      "_type": 1,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 46.34827586206897,
+      "_lineIndex": 2,
+      "_lineLayer": 0,
+      "_type": 1,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 47.79827586206897,
+      "_lineIndex": 2,
+      "_lineLayer": 0,
+      "_type": 1,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 49.248275862068965,
+      "_lineIndex": 2,
+      "_lineLayer": 0,
+      "_type": 1,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 51.75,
+      "_lineIndex": 1,
+      "_lineLayer": 0,
+      "_type": 0,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 53.174137931034494,
+      "_lineIndex": 1,
+      "_lineLayer": 0,
+      "_type": 0,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 54.62413793103448,
+      "_lineIndex": 1,
+      "_lineLayer": 0,
+      "_type": 0,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 56.07413793103449,
+      "_lineIndex": 1,
+      "_lineLayer": 0,
+      "_type": 0,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 57.52413793103448,
+      "_lineIndex": 1,
+      "_lineLayer": 0,
+      "_type": 0,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 59.5,
+      "_lineIndex": 1,
+      "_lineLayer": 0,
+      "_type": 0,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 60.760344827586216,
+      "_lineIndex": 1,
+      "_lineLayer": 0,
+      "_type": 0,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 62.21034482758621,
+      "_lineIndex": 1,
+      "_lineLayer": 0,
+      "_type": 0,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 63.660344827586215,
+      "_lineIndex": 1,
+      "_lineLayer": 0,
+      "_type": 0,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 65.1103448275862,
+      "_lineIndex": 1,
+      "_lineLayer": 0,
+      "_type": 0,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 67.25,
+      "_lineIndex": 1,
+      "_lineLayer": 0,
+      "_type": 0,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 68.34655172413794,
+      "_lineIndex": 1,
+      "_lineLayer": 0,
+      "_type": 0,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 69.79655172413793,
+      "_lineIndex": 1,
+      "_lineLayer": 0,
+      "_type": 0,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 71.24655172413794,
+      "_lineIndex": 1,
+      "_lineLayer": 0,
+      "_type": 0,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 72.69655172413793,
+      "_lineIndex": 1,
+      "_lineLayer": 0,
+      "_type": 0,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 75,
+      "_lineIndex": 1,
+      "_lineLayer": 0,
+      "_type": 0,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 75.93275862068967,
+      "_lineIndex": 1,
+      "_lineLayer": 0,
+      "_type": 0,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 77.38275862068966,
+      "_lineIndex": 1,
+      "_lineLayer": 0,
+      "_type": 0,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 78.83275862068966,
+      "_lineIndex": 1,
+      "_lineLayer": 0,
+      "_type": 0,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 80.28275862068966,
+      "_lineIndex": 1,
+      "_lineLayer": 0,
+      "_type": 0,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 83,
+      "_lineIndex": 1,
+      "_lineLayer": 0,
+      "_type": 0,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 84.20862068965518,
+      "_lineIndex": 1,
+      "_lineLayer": 0,
+      "_type": 0,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 85.65862068965518,
+      "_lineIndex": 1,
+      "_lineLayer": 0,
+      "_type": 0,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 87.10862068965518,
+      "_lineIndex": 1,
+      "_lineLayer": 0,
+      "_type": 0,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 88.55862068965517,
+      "_lineIndex": 1,
+      "_lineLayer": 0,
+      "_type": 0,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 91,
+      "_lineIndex": 1,
+      "_lineLayer": 0,
+      "_type": 0,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 91.79482758620689,
+      "_lineIndex": 1,
+      "_lineLayer": 0,
+      "_type": 0,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 93.24482758620691,
+      "_lineIndex": 1,
+      "_lineLayer": 0,
+      "_type": 0,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 94.69482758620691,
+      "_lineIndex": 1,
+      "_lineLayer": 0,
+      "_type": 0,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 96.1448275862069,
+      "_lineIndex": 1,
+      "_lineLayer": 0,
+      "_type": 0,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 99,
+      "_lineIndex": 2,
+      "_lineLayer": 0,
+      "_type": 1,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 100.07068965517242,
+      "_lineIndex": 2,
+      "_lineLayer": 0,
+      "_type": 1,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 101.52068965517243,
+      "_lineIndex": 2,
+      "_lineLayer": 0,
+      "_type": 1,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 102.97068965517242,
+      "_lineIndex": 2,
+      "_lineLayer": 0,
+      "_type": 1,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 104.42068965517242,
+      "_lineIndex": 2,
+      "_lineLayer": 0,
+      "_type": 1,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 107,
+      "_lineIndex": 1,
+      "_lineLayer": 0,
+      "_type": 0,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 108.34655172413794,
+      "_lineIndex": 1,
+      "_lineLayer": 0,
+      "_type": 0,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 109.79655172413794,
+      "_lineIndex": 1,
+      "_lineLayer": 0,
+      "_type": 0,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 111.24655172413794,
+      "_lineIndex": 1,
+      "_lineLayer": 0,
+      "_type": 0,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 112.69655172413793,
+      "_lineIndex": 1,
+      "_lineLayer": 0,
+      "_type": 0,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 115,
+      "_lineIndex": 1,
+      "_lineLayer": 0,
+      "_type": 0,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 115.93275862068965,
+      "_lineIndex": 1,
+      "_lineLayer": 0,
+      "_type": 0,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 117.38275862068967,
+      "_lineIndex": 1,
+      "_lineLayer": 0,
+      "_type": 0,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 118.83275862068966,
+      "_lineIndex": 1,
+      "_lineLayer": 0,
+      "_type": 0,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 120.28275862068966,
+      "_lineIndex": 1,
+      "_lineLayer": 0,
+      "_type": 0,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 123,
+      "_lineIndex": 1,
+      "_lineLayer": 0,
+      "_type": 0,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 124.20862068965518,
+      "_lineIndex": 1,
+      "_lineLayer": 0,
+      "_type": 0,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 125.6586206896552,
+      "_lineIndex": 1,
+      "_lineLayer": 0,
+      "_type": 0,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 127.10862068965518,
+      "_lineIndex": 1,
+      "_lineLayer": 0,
+      "_type": 0,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 128.55862068965519,
+      "_lineIndex": 1,
+      "_lineLayer": 0,
+      "_type": 0,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 131,
+      "_lineIndex": 2,
+      "_lineLayer": 0,
+      "_type": 1,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 131.7948275862069,
+      "_lineIndex": 2,
+      "_lineLayer": 0,
+      "_type": 1,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 133.24482758620692,
+      "_lineIndex": 2,
+      "_lineLayer": 0,
+      "_type": 1,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 134.6948275862069,
+      "_lineIndex": 2,
+      "_lineLayer": 0,
+      "_type": 1,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 136.1448275862069,
+      "_lineIndex": 2,
+      "_lineLayer": 0,
+      "_type": 1,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 139,
+      "_lineIndex": 2,
+      "_lineLayer": 0,
+      "_type": 1,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 140.07068965517243,
+      "_lineIndex": 2,
+      "_lineLayer": 0,
+      "_type": 1,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 141.52068965517242,
+      "_lineIndex": 2,
+      "_lineLayer": 0,
+      "_type": 1,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 142.97068965517244,
+      "_lineIndex": 2,
+      "_lineLayer": 0,
+      "_type": 1,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 144.42068965517242,
+      "_lineIndex": 2,
+      "_lineLayer": 0,
+      "_type": 1,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 147,
+      "_lineIndex": 1,
+      "_lineLayer": 0,
+      "_type": 0,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 148.34655172413792,
+      "_lineIndex": 1,
+      "_lineLayer": 0,
+      "_type": 0,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 149.79655172413794,
+      "_lineIndex": 1,
+      "_lineLayer": 0,
+      "_type": 0,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 151.24655172413793,
+      "_lineIndex": 1,
+      "_lineLayer": 0,
+      "_type": 0,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 152.69655172413795,
+      "_lineIndex": 1,
+      "_lineLayer": 0,
+      "_type": 0,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 155,
+      "_lineIndex": 2,
+      "_lineLayer": 0,
+      "_type": 1,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 155.93275862068967,
+      "_lineIndex": 2,
+      "_lineLayer": 0,
+      "_type": 1,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 157.38275862068969,
+      "_lineIndex": 2,
+      "_lineLayer": 0,
+      "_type": 1,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 158.83275862068967,
+      "_lineIndex": 2,
+      "_lineLayer": 0,
+      "_type": 1,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 160.28275862068966,
+      "_lineIndex": 2,
+      "_lineLayer": 0,
+      "_type": 1,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 163,
+      "_lineIndex": 2,
+      "_lineLayer": 0,
+      "_type": 1,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 164.2086206896552,
+      "_lineIndex": 2,
+      "_lineLayer": 0,
+      "_type": 1,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 165.65862068965518,
+      "_lineIndex": 2,
+      "_lineLayer": 0,
+      "_type": 1,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 167.1086206896552,
+      "_lineIndex": 2,
+      "_lineLayer": 0,
+      "_type": 1,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 168.55862068965519,
+      "_lineIndex": 2,
+      "_lineLayer": 0,
+      "_type": 1,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 171,
+      "_lineIndex": 1,
+      "_lineLayer": 0,
+      "_type": 0,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 171.7948275862069,
+      "_lineIndex": 1,
+      "_lineLayer": 0,
+      "_type": 0,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 173.24482758620692,
+      "_lineIndex": 1,
+      "_lineLayer": 0,
+      "_type": 0,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 174.6948275862069,
+      "_lineIndex": 1,
+      "_lineLayer": 0,
+      "_type": 0,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 176.1448275862069,
+      "_lineIndex": 1,
+      "_lineLayer": 0,
+      "_type": 0,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 179,
+      "_lineIndex": 2,
+      "_lineLayer": 0,
+      "_type": 1,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 180.07068965517243,
+      "_lineIndex": 2,
+      "_lineLayer": 0,
+      "_type": 1,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 181.52068965517242,
+      "_lineIndex": 2,
+      "_lineLayer": 0,
+      "_type": 1,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 182.97068965517244,
+      "_lineIndex": 2,
+      "_lineLayer": 0,
+      "_type": 1,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 184.42068965517245,
+      "_lineIndex": 2,
+      "_lineLayer": 0,
+      "_type": 1,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 187,
+      "_lineIndex": 1,
+      "_lineLayer": 0,
+      "_type": 0,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 188.34655172413795,
+      "_lineIndex": 1,
+      "_lineLayer": 0,
+      "_type": 0,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 189.79655172413794,
+      "_lineIndex": 1,
+      "_lineLayer": 0,
+      "_type": 0,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 191.24655172413796,
+      "_lineIndex": 1,
+      "_lineLayer": 0,
+      "_type": 0,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 192.69655172413795,
+      "_lineIndex": 1,
+      "_lineLayer": 0,
+      "_type": 0,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 195,
+      "_lineIndex": 1,
+      "_lineLayer": 0,
+      "_type": 0,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 195.93275862068967,
+      "_lineIndex": 1,
+      "_lineLayer": 0,
+      "_type": 0,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 197.38275862068966,
+      "_lineIndex": 1,
+      "_lineLayer": 0,
+      "_type": 0,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 198.83275862068967,
+      "_lineIndex": 1,
+      "_lineLayer": 0,
+      "_type": 0,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 200.2827586206897,
+      "_lineIndex": 1,
+      "_lineLayer": 0,
+      "_type": 0,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 204,
+      "_lineIndex": 1,
+      "_lineLayer": 0,
+      "_type": 0,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 204.898275862069,
+      "_lineIndex": 1,
+      "_lineLayer": 0,
+      "_type": 0,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 206.34827586206896,
+      "_lineIndex": 1,
+      "_lineLayer": 0,
+      "_type": 0,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 207.79827586206898,
+      "_lineIndex": 1,
+      "_lineLayer": 0,
+      "_type": 0,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 209.248275862069,
+      "_lineIndex": 1,
+      "_lineLayer": 0,
+      "_type": 0,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 212,
+      "_lineIndex": 1,
+      "_lineLayer": 0,
+      "_type": 0,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 213.17413793103452,
+      "_lineIndex": 1,
+      "_lineLayer": 0,
+      "_type": 0,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 214.62413793103448,
+      "_lineIndex": 1,
+      "_lineLayer": 0,
+      "_type": 0,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 216.0741379310345,
+      "_lineIndex": 1,
+      "_lineLayer": 0,
+      "_type": 0,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 217.52413793103452,
+      "_lineIndex": 1,
+      "_lineLayer": 0,
+      "_type": 0,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 220,
+      "_lineIndex": 2,
+      "_lineLayer": 0,
+      "_type": 1,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 221.45000000000002,
+      "_lineIndex": 2,
+      "_lineLayer": 0,
+      "_type": 1,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 222.9,
+      "_lineIndex": 2,
+      "_lineLayer": 0,
+      "_type": 1,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 224.35000000000002,
+      "_lineIndex": 2,
+      "_lineLayer": 0,
+      "_type": 1,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 225.80000000000004,
+      "_lineIndex": 2,
+      "_lineLayer": 0,
+      "_type": 1,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 228,
+      "_lineIndex": 1,
+      "_lineLayer": 0,
+      "_type": 0,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 229.03620689655176,
+      "_lineIndex": 1,
+      "_lineLayer": 0,
+      "_type": 0,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 230.48620689655172,
+      "_lineIndex": 1,
+      "_lineLayer": 0,
+      "_type": 0,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 231.93620689655174,
+      "_lineIndex": 1,
+      "_lineLayer": 0,
+      "_type": 0,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 233.38620689655176,
+      "_lineIndex": 1,
+      "_lineLayer": 0,
+      "_type": 0,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 236,
+      "_lineIndex": 1,
+      "_lineLayer": 0,
+      "_type": 0,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 237.31206896551728,
+      "_lineIndex": 1,
+      "_lineLayer": 0,
+      "_type": 0,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 238.76206896551724,
+      "_lineIndex": 1,
+      "_lineLayer": 0,
+      "_type": 0,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 240.21206896551726,
+      "_lineIndex": 1,
+      "_lineLayer": 0,
+      "_type": 0,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 241.66206896551728,
+      "_lineIndex": 1,
+      "_lineLayer": 0,
+      "_type": 0,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 244,
+      "_lineIndex": 2,
+      "_lineLayer": 0,
+      "_type": 1,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 244.898275862069,
+      "_lineIndex": 2,
+      "_lineLayer": 0,
+      "_type": 1,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 246.34827586206896,
+      "_lineIndex": 2,
+      "_lineLayer": 0,
+      "_type": 1,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 247.79827586206898,
+      "_lineIndex": 2,
+      "_lineLayer": 0,
+      "_type": 1,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 249.248275862069,
+      "_lineIndex": 2,
+      "_lineLayer": 0,
+      "_type": 1,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 252,
+      "_lineIndex": 2,
+      "_lineLayer": 0,
+      "_type": 1,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 253.17413793103452,
+      "_lineIndex": 2,
+      "_lineLayer": 0,
+      "_type": 1,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 254.62413793103448,
+      "_lineIndex": 2,
+      "_lineLayer": 0,
+      "_type": 1,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 256.0741379310345,
+      "_lineIndex": 2,
+      "_lineLayer": 0,
+      "_type": 1,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 257.52413793103455,
+      "_lineIndex": 2,
+      "_lineLayer": 0,
+      "_type": 1,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 260,
+      "_lineIndex": 1,
+      "_lineLayer": 0,
+      "_type": 0,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 261.45000000000005,
+      "_lineIndex": 1,
+      "_lineLayer": 0,
+      "_type": 0,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 262.90000000000003,
+      "_lineIndex": 1,
+      "_lineLayer": 0,
+      "_type": 0,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 264.35,
+      "_lineIndex": 1,
+      "_lineLayer": 0,
+      "_type": 0,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 265.8,
+      "_lineIndex": 1,
+      "_lineLayer": 0,
+      "_type": 0,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 268,
+      "_lineIndex": 2,
+      "_lineLayer": 0,
+      "_type": 1,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 269.03620689655173,
+      "_lineIndex": 2,
+      "_lineLayer": 0,
+      "_type": 1,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 270.4862068965517,
+      "_lineIndex": 2,
+      "_lineLayer": 0,
+      "_type": 1,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 271.93620689655177,
+      "_lineIndex": 2,
+      "_lineLayer": 0,
+      "_type": 1,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 273.38620689655176,
+      "_lineIndex": 2,
+      "_lineLayer": 0,
+      "_type": 1,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 276,
+      "_lineIndex": 1,
+      "_lineLayer": 0,
+      "_type": 0,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 277.31206896551726,
+      "_lineIndex": 1,
+      "_lineLayer": 0,
+      "_type": 0,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 278.76206896551724,
+      "_lineIndex": 1,
+      "_lineLayer": 0,
+      "_type": 0,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 280.2120689655173,
+      "_lineIndex": 1,
+      "_lineLayer": 0,
+      "_type": 0,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 281.6620689655173,
+      "_lineIndex": 1,
+      "_lineLayer": 0,
+      "_type": 0,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 284,
+      "_lineIndex": 2,
+      "_lineLayer": 0,
+      "_type": 1,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 284.898275862069,
+      "_lineIndex": 2,
+      "_lineLayer": 0,
+      "_type": 1,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 286.348275862069,
+      "_lineIndex": 2,
+      "_lineLayer": 0,
+      "_type": 1,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 287.798275862069,
+      "_lineIndex": 2,
+      "_lineLayer": 0,
+      "_type": 1,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 289.248275862069,
+      "_lineIndex": 2,
+      "_lineLayer": 0,
+      "_type": 1,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 292,
+      "_lineIndex": 2,
+      "_lineLayer": 0,
+      "_type": 1,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 293.1741379310345,
+      "_lineIndex": 2,
+      "_lineLayer": 0,
+      "_type": 1,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 294.6241379310345,
+      "_lineIndex": 2,
+      "_lineLayer": 0,
+      "_type": 1,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 296.0741379310345,
+      "_lineIndex": 2,
+      "_lineLayer": 0,
+      "_type": 1,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 297.52413793103455,
+      "_lineIndex": 2,
+      "_lineLayer": 0,
+      "_type": 1,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 300,
+      "_lineIndex": 2,
+      "_lineLayer": 0,
+      "_type": 1,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 301.45000000000005,
+      "_lineIndex": 2,
+      "_lineLayer": 0,
+      "_type": 1,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 302.90000000000003,
+      "_lineIndex": 2,
+      "_lineLayer": 0,
+      "_type": 1,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 304.35,
+      "_lineIndex": 2,
+      "_lineLayer": 0,
+      "_type": 1,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 305.8,
+      "_lineIndex": 2,
+      "_lineLayer": 0,
+      "_type": 1,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 308,
+      "_lineIndex": 1,
+      "_lineLayer": 0,
+      "_type": 0,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 309.03620689655173,
+      "_lineIndex": 1,
+      "_lineLayer": 0,
+      "_type": 0,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 310.4862068965517,
+      "_lineIndex": 1,
+      "_lineLayer": 0,
+      "_type": 0,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 311.93620689655177,
+      "_lineIndex": 1,
+      "_lineLayer": 0,
+      "_type": 0,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 313.38620689655176,
+      "_lineIndex": 1,
+      "_lineLayer": 0,
+      "_type": 0,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 316,
+      "_lineIndex": 1,
+      "_lineLayer": 0,
+      "_type": 0,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 317.31206896551726,
+      "_lineIndex": 1,
+      "_lineLayer": 0,
+      "_type": 0,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 318.76206896551724,
+      "_lineIndex": 1,
+      "_lineLayer": 0,
+      "_type": 0,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 320.2120689655173,
+      "_lineIndex": 1,
+      "_lineLayer": 0,
+      "_type": 0,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    },
+    {
+      "_time": 321.6620689655173,
+      "_lineIndex": 1,
+      "_lineLayer": 0,
+      "_type": 0,
+      "_cutDirection": 0,
+      "_angleOffset": 0
+    }
+  ],
+  "_obstacles": [],
+  "_events": [],
+  "_BPMChanges": []
+}

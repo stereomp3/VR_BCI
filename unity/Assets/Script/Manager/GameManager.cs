@@ -52,7 +52,7 @@ public class GameManager : MonoBehaviour
     public OnNoteSpawn onNoteSpawnCallback; // 0 event
     public OnAutoSaber onAutoSaberCallback;  // 1 event in AutoSaber，trigger in BeatmapSpawner.cs，處裡 autosaber 位置移動
     public SetupAutoSaber setupAutoSaberCallback;  // 1 event in GameManager，trigger in BeatmapSpawner.cs，處裡顯示 autosaber 隱藏 hand
-    public OnSaberCut onSaberCutCallback;  // 1 event in ScoreManager，1 event in CalibrationBeatmapSpawner，trigger in SaberSlicer.cs，處裡切的時候相關事件
+    public OnSaberCut onSaberCutCallback;  // 1 event in ScoreManager，1 event in CalibrationBeatmapSpawner，trigger in TimeLogger.cs，處裡切的時候相關事件
     public SetLog setLogCallback;  // 1 event in TimeLogger，trigger in NoteLogTrigger and SaberSlicer and EEGTrain，紀錄 Log
     public OnGameStop onGameStopCallback;  // 用在 BeatSaberInforLoader.cs 停歌，和 BeatmapSpawener 停送 note，在 GameManager 裡面雙手合起來的時候呼叫
     public OnGameStart onGameStartCallback;  // 用在 BeatSaberInforLoader.cs 和 BeatmapSpawener 停送 note，在 OptionMenu 設定 Canvas button 觸發的時候呼叫
@@ -69,11 +69,14 @@ public class GameManager : MonoBehaviour
     public float start_game_seconds = 0f;  // 遊戲開始時間，也是 calibration 的時間  // use in BeatmapSpawner, BeatSaberInfoLoader
     public Stage now_stage;  // 紀錄目前在的位置
     public bool is_training = false; // 紀錄 python 那邊是否在訓練，透過 LSL Train_MarkerStream stream 傳送的 string，來設定是否有訓練，用於 SceneLoaderManager LoadScene
+    public bool calibration_model_finish =false; // 透過 TCP_Client 改變，這個為 true，代表 calibration 的模型訓練完成，然後由 Calibration2.cs 來變為 false (waiting_loop)
+
     private Transform LeftHand_parent, RightHand_parent;
     private bool is_show_hand = true;
     private float detect_hand_time = 1f;
     private float timer;
     private bool isPaused = false; // 用於遊戲暫停
+    
     
     // Start is called before the first frame update
     void Start()
@@ -100,7 +103,7 @@ public class GameManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        timer += Time.deltaTime;
+        /*timer += Time.deltaTime; // 暫時把暫停功能關閉，受試者很多會不小心用到
         if (timer > detect_hand_time)
         {
             // visible the hand or unvisible the hand
@@ -110,7 +113,7 @@ public class GameManager : MonoBehaviour
                 if (now_stage != Stage.LOBBY) TogglePause();
             }
             timer = 0;
-        }
+        }*/
     }
 
     void SetupAutoSaberAndHand() // 目前在 BeatmapSpawner 觸發 (update)，所以在生成 note 會一直自動把雙手變不見
@@ -129,7 +132,7 @@ public class GameManager : MonoBehaviour
 
     public IEnumerator SetFinalAcc() // tmp // 之後要改成歌曲完成後出現 // 目前在 BeatmapSpawner 呼叫
     {
-        yield return new WaitForSeconds(10f);
+        yield return new WaitForSeconds(5f);
         AutoSaber AS = AutoSaber.instance;
         if (AS != null && is_audosaber)
         {

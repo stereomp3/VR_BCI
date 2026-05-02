@@ -1,0 +1,70 @@
+{
+  "_version": "2.0.0",
+  "_songName": "Gate of Steiner -Main theme-",
+  "_songSubName": "",
+  "_songAuthorName": "Takeshi Abo",
+  "_levelAuthorName": "Joetastic & realCoda",
+  "_beatsPerMinute": 152,
+  "_shuffle": 0,
+  "_shufflePeriod": 0.5,
+  "_previewStartTime": 170.526,
+  "_previewDuration": 10,
+  "_songFilename": "song.ogg",
+  "_coverImageFilename": "cover.jpg",
+  "_environmentName": "DragonsEnvironment",
+  "_songTimeOffset": 0,
+  "_customData": {
+    "_contributors": [],
+    "_editors": {
+      "_lastEditedBy": "MMA2",
+      "MMA2": {
+        "version": "4.8.4a-e5"
+      },
+      "ChroMapper": {
+        "version": "0.8.0"
+      }
+    }
+  },
+  "_difficultyBeatmapSets": [
+    {
+      "_beatmapCharacteristicName": "Standard",
+      "_difficultyBeatmaps": [
+        {
+          "_difficulty": "ExpertPlus",
+          "_difficultyRank": 9,
+          "_beatmapFilename": "ExpertPlusStandard.dat",
+          "_noteJumpMovementSpeed": 17,
+          "_noteJumpStartBeatOffset": -0.25,
+          "_customData": {
+            "_editorOffset": 0,
+            "_editorOldOffset": 0,
+            "_warnings": [],
+            "_information": [],
+            "_suggestions": [],
+            "_requirements": [],
+            "_envColorRightBoost": {
+              "r": 0.9750000238418579,
+              "g": 0.9380000233650208,
+              "b": 0.7170000076293945
+            },
+            "_envColorLeftBoost": {
+              "r": 0.7279999852180481,
+              "g": 0,
+              "b": 0
+            },
+            "_envColorRight": {
+              "r": 0.7979999780654907,
+              "g": 0.8510000109672546,
+              "b": 1
+            },
+            "_envColorLeft": {
+              "r": 0.414000004529953,
+              "g": 0.6299999952316284,
+              "b": 0.4790000021457672
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

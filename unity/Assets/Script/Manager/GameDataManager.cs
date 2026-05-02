@@ -27,4 +27,5 @@ public class GameDataManager : MonoBehaviour
     public List<string> python_models_name = new List<string>();
     public int turn_type = 0;  // { Snap = 0, Continuous = 1};
     public int forward_type = 0;  // { follow camera = 0, follow palyer = 1};
+    public bool is_calibration = false; // 目前沒用
 }

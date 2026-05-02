@@ -102,7 +102,10 @@ public class TCP_Client : MonoBehaviour
             {
                 mainThreadActions.Enqueue(() => set_python_models_name(marker)); 
             }
-
+            if (marker.Contains(Config.calibration_done))
+            {
+                GM.calibration_model_finish = true;
+            }
             if (GM.is_training && (marker != "0" && marker != "1")) // GM.is_training 在 Calibration 後面觸發或是 按下 training button 觸發
             {
                 lock (mainThreadActions) // 將需要在主執行緒執行的邏輯排入佇列，因為 thread 不能呼叫 UI 功能

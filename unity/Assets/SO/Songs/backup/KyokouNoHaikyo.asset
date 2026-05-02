@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 55de789421094bf4d8eeafa2faf58278, type: 3}
+  m_Name: KyokouNoHaikyo
+  m_EditorClassIdentifier: 
+  name: run6
+  description: "maritumix / \u307E\u308A\u3064\u307F - Kyokou no Haikyo / \u865A\u69CB\u306E\u5EC3\u589F"
+  info_name: Info.dat
+  dir: run6
+  file_names:
+  - MI_ExpertPlusStandard_v2_augmented_53s.dat
+  - ExpertPlusStandard_v2.dat
+  ui_show_names:
+  - MI
+  - Expert+

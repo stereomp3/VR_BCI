@@ -8,6 +8,7 @@ using System.IO;
 public class Song : ScriptableObject
 {
     public new string name;  // 讓其他Scriptable也可以用name
+    [TextArea]
     public string description;
 
     public string info_name = "info.dat"; // info 名稱

@@ -6,7 +6,7 @@ using Newtonsoft.Json;
 using UnityEngine.UIElements;
 
 public class BeatmapSpawner : MonoBehaviour
-{
+{   // 要把 run 的訓練用回來，需要改 TimeLogger.cs 裡面傳送到 python 那邊，以及 ECEOCondition
     public GameObject blockPrefab_red;
     public GameObject blockPrefab_blue;
     public GameObject LinePrefab_red;
@@ -36,41 +36,26 @@ public class BeatmapSpawner : MonoBehaviour
     protected float beatThreshold_up; // 創建 group 的最常容許秒數
     protected float beatThreshold_down;  // 創建 group 的最低容許秒數
     protected float beatThreshold_1s;  // 1 秒
-    
+    protected TCP_Client TC;  // 用於傳送睜眼閉眼
+
     void Start()
     {
         GM = GameManager.instance;
         GM.onGameStopCallback += stop_gmae;
         GM.onGameStartCallback += start_gmae;
 
+        TC = TCP_Client.instance;
+
         beatSaberInfoLoader = GetComponent<BeatSaberInfoLoader>(); // select difficulty
         song = beatSaberInfoLoader.song;
         bpm = beatSaberInfoLoader.song_bpm;
         beatsPerSecond = bpm / 60f;
 
-        beatThreshold_up = (Config.cube_space_time * Config.group_note_num + 2) * beatsPerSecond;
-        beatThreshold_down = (Config.cube_space_time * Config.group_note_num) * beatsPerSecond;
-        beatThreshold_1s = 1.0f * beatsPerSecond;
-
         per_spawn_second = GM.song_delay_time;
         start_game_seconds = GM.start_game_seconds;
-        
-        // string json = File.ReadAllText(filePath);
-        string filePath = Path.Combine(Application.streamingAssetsPath, song.dir, song.file_names[0]);
-        StartCoroutine(StreamingAssetLoader.ReadFileFromJar(filePath, (json) => {
-            if (json != null)
-            {
-                OldBeatmap beatmap = JsonConvert.DeserializeObject<OldBeatmap>(json);
-                if (beatmap == null || beatmap.notes == null)
-                {
-                    Debug.LogError("Failed to deserialize .dat file or _notes is null");
-                    return;
-                }
-                if (use_random) beatmap = set_random_old_note(beatmap, Config.group_note_num, beatThreshold_up, beatThreshold_down, beatThreshold_1s);
-                old_notes = beatmap.notes;
-                GM.correct_total = old_notes.Count * 1;  // tmp // 把 group 結果給到 GM
-            }
-        }));
+
+        load_song();
+
         songStartTime = Time.time;
     }
     
@@ -88,7 +73,12 @@ public class BeatmapSpawner : MonoBehaviour
                 float currentBeat = elapsedTime * beatsPerSecond;
                 if (currentNoteIndex >= old_notes.Count)
                 {
-                    if(!beatSaberInfoLoader.is_end_song) StartCoroutine(GM.SetFinalAcc());
+                    if (!beatSaberInfoLoader.is_end_song)
+                    {
+                        StartCoroutine(GM.SetFinalAcc());
+                        // StartCoroutine(ECEOCondition(Config.adaptive_model)); // 睜眼閉眼任務，與是否訓練
+                        StartCoroutine(ECEOCondition(false)); // 睜眼閉眼任務，與是否訓練
+                    }
                     beatSaberInfoLoader.is_end_song = true;
                     return;
                 }
@@ -129,7 +119,44 @@ public class BeatmapSpawner : MonoBehaviour
             }
         }
     }
+    protected IEnumerator ECEOCondition(bool is_training) // 睜眼閉眼任務
+    {
+        yield return new WaitForSeconds(10f);
+        text2speech.instance.Speak("Please Close your eyes.");
+        TC.send_string_to_python($"Close eyes: {Timer.GetUnixTimestamp():F3}");
+        // yield return new WaitForSeconds(2.5f);
+        if (is_training) GM.start_training(); // 根據設定判斷是否要訓練
+        yield return new WaitForSeconds(20f);
+        
+        text2speech.instance.Speak("Please Open your eyes.");
+        TC.send_string_to_python($"Open eyes: {Timer.GetUnixTimestamp():F3}");
+        yield return new WaitForSeconds(20f);
+        text2speech.instance.Speak("This run of testing has ended.");
+    }
 
+    protected void load_song()
+    {
+        beatThreshold_up = (Config.cube_space_time * Config.group_note_num + 2) * beatsPerSecond;
+        beatThreshold_down = (Config.cube_space_time * Config.group_note_num) * beatsPerSecond;
+        beatThreshold_1s = 1.0f * beatsPerSecond;
+
+        // string json = File.ReadAllText(filePath);
+        string filePath = Path.Combine(Application.streamingAssetsPath, song.dir, song.file_names[0]);
+        StartCoroutine(StreamingAssetLoader.ReadFileFromJar(filePath, (json) => {
+            if (json != null)
+            {
+                OldBeatmap beatmap = JsonConvert.DeserializeObject<OldBeatmap>(json);
+                if (beatmap == null || beatmap.notes == null)
+                {
+                    Debug.LogError("Failed to deserialize .dat file or _notes is null");
+                    return;
+                }
+                if (use_random) beatmap = set_random_old_note(beatmap, Config.group_note_num, beatThreshold_up, beatThreshold_down, beatThreshold_1s);
+                old_notes = beatmap.notes;
+                GM.correct_total = old_notes.Count * 1;  // tmp // 把 group 結果給到 GM
+            }
+        }));
+    }
     protected void SpawnOldBlock(OldNote note)
     {
         Vector3 position = new Vector3(note.lineIndex - 1.5f, note.lineLayer + spawn_y_offset, 0) * cude_space; // Adjust as needed
@@ -156,7 +183,7 @@ public class BeatmapSpawner : MonoBehaviour
         obj.name = $"Note [t={note.time:F2}, dir={note.cutDirection}]";
         if(Config.group_note_num == 1) obj.AddComponent<NoteLogTrigger>();  // 只有一個 note 就要加入這個才會有 start 和 end
     }
-    protected void SpawnLine(OldNote note, float beatThreshold_up) // 生成線條，用於 group start end，之後也可以單看 cut，然後由 cut 往前或是後推，SaberSlicer 砍下去會送出 CUT
+    protected void SpawnLine(OldNote note, float beatThreshold_up, float assign_dur=-1) // 生成線條，用於 group start end，之後也可以單看 cut，然後由 cut 往前或是後推，SaberSlicer 砍下去會送出 CUT
     {
         Vector3 position = new Vector3(note.lineIndex - 1.5f, note.lineLayer - 0.3f + spawn_y_offset, -1.5f) * cude_space; // Adjust as needed
         Quaternion rotation = Quaternion.identity;
@@ -170,7 +197,10 @@ public class BeatmapSpawner : MonoBehaviour
         {
             groupDuration = duration;
         }
-
+        if (assign_dur != -1)  // 這段是為了在 calibration 自記創建 note 的時候，會沒有 duration，所以需要自己設定
+        {
+            groupDuration = assign_dur; 
+        }
         // 3. 計算比例並修改 Scale X
         if (beatThreshold_up > 0) // 防呆避免除以 0
         {
@@ -233,8 +263,60 @@ public class BeatmapSpawner : MonoBehaviour
 
         return binaryList;
     }
+    List<int> GenerateGroupedBinaryList(int N, int groupSize, int seed)
+    {
+        // 檢查 N 是否能被 groupSize 整除
+        if (N % groupSize != 0)
+        {
+            Debug.LogError($"N ({N}) 必須能被 groupSize ({groupSize}) 整除。");
+            return null;
+        }
 
-    protected OldBeatmap set_random_old_note(OldBeatmap data) // data 為 單一 list，沒有分組
+        // 檢查 groupSize 是否為偶數 (為了讓 0 和 1 數量相等)
+        if (groupSize % 2 != 0)
+        {
+            Debug.LogError($"groupSize ({groupSize}) 必須是偶數，才能平均分配 0 和 1。");
+            return null;
+        }
+
+        // 初始化最終的 List
+        List<int> finalBinaryList = new List<int>();
+
+        // 使用 seed 初始化亂數產生器 (只需初始化一次，確保整個序列受控)
+        System.Random rng = new System.Random(seed);
+
+        // 計算總共有幾組
+        int numGroups = N / groupSize;
+        int halfGroup = groupSize / 2;
+
+        // 開始分組產生
+        for (int g = 0; g < numGroups; g++)
+        {
+            // 1. 建立該組的暫存 List
+            List<int> groupList = new List<int>();
+
+            // 加入一半的 0
+            for (int i = 0; i < halfGroup; i++) groupList.Add(0);
+            // 加入一半的 1
+            for (int i = 0; i < halfGroup; i++) groupList.Add(1);
+
+            // 2. 對該組進行 Fisher-Yates Shuffle (組內洗牌)
+            for (int i = groupList.Count - 1; i > 0; i--)
+            {
+                int j = rng.Next(i + 1);
+                int temp = groupList[i];
+                groupList[i] = groupList[j];
+                groupList[j] = temp;
+            }
+
+            // 3. 將洗牌後的該組加入最終 List
+            finalBinaryList.AddRange(groupList);
+        }
+
+        return finalBinaryList;
+    }
+
+    protected OldBeatmap set_random_old_note(OldBeatmap data) // data 為 單一 list，沒有分組 用於之前 Caliration 系列的，現在 Calibriatino 也用 這個 script
     {
         seed = Random.Range(0, 10000); // 設定隨機種子，在 use_random 為 true，設定隨機左右才會用到
         int numNotes = data.notes.Count;
@@ -283,7 +365,7 @@ public class BeatmapSpawner : MonoBehaviour
         int numGroups = groups.Count;
         Debug.Log($"Group num is {numGroups}");
         int numZeros = numGroups / 2; // 一半的 Group 為 0
-        List<int> binaryList = GenerateRandomBinaryList(numGroups, numZeros, seed);
+        List<int> binaryList = GenerateGroupedBinaryList(numGroups, Config.trial_train_interval, seed);// GenerateRandomBinaryList(numGroups, numZeros, seed);
 
         // 4. 建立一個新的 List 來存放處理後的 Note
         // 因為有些 Note 可能在分組過程中被丟棄 (不足 n 且時間短)，或者因奇數組被移除

@@ -17,7 +17,7 @@ MonoBehaviour:
   info_name: info.dat
   dir: SwordLand
   file_names:
-  - MI_Hard_07s.dat
+  - MI_Hard_augmented_5s.dat
   - Hard.dat
   ui_show_names:
   - MI

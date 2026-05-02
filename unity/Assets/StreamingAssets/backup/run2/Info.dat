@@ -1,0 +1,87 @@
+{
+  "_version": "2.0.0",
+  "_songName": "peace of mind",
+  "_songSubName": "",
+  "_songAuthorName": "jacoo",
+  "_levelAuthorName": "BurningFlame",
+  "_beatsPerMinute": 89,
+  "_shuffle": 0,
+  "_shufflePeriod": 0.5,
+  "_previewStartTime": 39,
+  "_previewDuration": 10,
+  "_songFilename": "song.ogg",
+  "_coverImageFilename": "cover.jpg",
+  "_environmentName": "DefaultEnvironment",
+  "_songTimeOffset": 0,
+  "_customData": {
+    "_editorSettings": {
+      "enabledFastWalls": false,
+      "modSettings": {
+        "customColors": {
+          "isEnabled": true,
+          "colorLeft": "#efa90d",
+          "colorLeftOverdrive": 0,
+          "colorRight": "#5c97a7",
+          "colorRightOverdrive": 0,
+          "envColorLeft": "#a33002",
+          "envColorLeftOverdrive": 0,
+          "envColorRight": "#496d90",
+          "envColorRightOverdrive": 0,
+          "obstacleColor": "#7c7c7c",
+          "obstacleColorOverdrive": 0
+        },
+        "mappingExtensions": {
+          "isEnabled": false,
+          "numRows": 3,
+          "numCols": 4,
+          "colWidth": 1,
+          "rowHeight": 1
+        }
+      }
+    },
+    "_editor": "beatmapper"
+  },
+  "_difficultyBeatmapSets": [
+    {
+      "_beatmapCharacteristicName": "Standard",
+      "_difficultyBeatmaps": [
+        {
+          "_difficulty": "ExpertPlus",
+          "_difficultyRank": 9,
+          "_beatmapFilename": "ExpertPlus.dat",
+          "_noteJumpMovementSpeed": 18,
+          "_noteJumpStartBeatOffset": 0,
+          "_customData": {
+            "_editorOffset": 340,
+            "_requirements": [],
+            "_obstacleColor": {
+              "r": 0.48627450980392156,
+              "g": 0.48627450980392156,
+              "b": 0.48627450980392156
+            },
+            "_envColorRight": {
+              "r": 0.28627450980392155,
+              "g": 0.42745098039215684,
+              "b": 0.5647058823529412
+            },
+            "_envColorLeft": {
+              "r": 0.6392156862745098,
+              "g": 0.18823529411764706,
+              "b": 0.00784313725490196
+            },
+            "_colorRight": {
+              "r": 0.3607843137254902,
+              "g": 0.592156862745098,
+              "b": 0.6549019607843137
+            },
+            "_colorLeft": {
+              "r": 0.9372549019607843,
+              "g": 0.6627450980392157,
+              "b": 0.050980392156862744
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

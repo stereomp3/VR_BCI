@@ -28,6 +28,7 @@ public class SceneLoaderManager : MonoBehaviour
     public float transitionTime = 1f;
     public void LoadLobbyScene()
     {
+        GameDataManager.instance.is_calibration = false;
         StartCoroutine(LoadScene(Config.Stage[(int)Stage.LOBBY], 0));
     }
     public void LoadMIStage()

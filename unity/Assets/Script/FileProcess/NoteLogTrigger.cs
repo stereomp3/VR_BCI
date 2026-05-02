@@ -70,18 +70,16 @@ public class NoteLogTrigger : MonoBehaviour
 
             yield return null; // 等待下一偵
         }
-
+        
         // 確保最後 Z 軸真的是 0
         pp.localScale = new Vector3(initialScale.x, initialScale.y, 0f);
-
-        WaitAndEnd(0.5f); // 讓 log 晚點送出
+        StartCoroutine(WaitAndEnd(0.5f)); // 讓 log 晚點送出
     }
 
     //  final to send log
     void FinalizeEndLog()
     {
         if (GM.setLogCallback != null) GM.setLogCallback.Invoke(label, LogType.End);
-
         // destory obj
         if (pp != null) Destroy(pp.gameObject);
         else Destroy(gameObject); 

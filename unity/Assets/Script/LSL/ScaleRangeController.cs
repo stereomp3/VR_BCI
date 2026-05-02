@@ -17,7 +17,7 @@ public class ScaleRangeController : MonoBehaviour
     public float speedUp = 0.2f;   // Faster upward 上升速度 // 每秒上升 0.2，上升速度為下降兩倍
     public float speedDown = 0.1f; // Slower downward 自然下降速度
     private float timer = 0f;
-
+    private float scale_radio = 2f;
     private TCP_Client tcp_predict;
     private int maxHistory = 10;
     
@@ -43,8 +43,8 @@ public class ScaleRangeController : MonoBehaviour
             foreach (int val in tcp_predict.valueHistory)
                 if (val == 1) ones++;
 
-            RightTargetScale =  (maxHistory - ones) / (float)maxHistory; // 0 越多就把右手亮起來
-            LeftTargetScale = ones / (float)maxHistory; // 1 越多就把左手量起來
+            RightTargetScale =  (maxHistory - ones) / (maxHistory * scale_radio); // 0 越多就把右手亮起來
+            LeftTargetScale = ones / (maxHistory * scale_radio); // 1 越多就把左手量起來
         }
         // right stick
         if (RightCurrentScale < RightTargetScale)
@@ -56,8 +56,9 @@ public class ScaleRangeController : MonoBehaviour
             RightCurrentScale = Mathf.MoveTowards(RightCurrentScale, RightTargetScale, speedDown * Time.deltaTime);
         }
 
+
         // Apply to material
-        RightSaberMaterial.SetFloat("_scale_range", RightCurrentScale);  // 目前是設定 0.5 就是滿的，也就是 history 裡面有 5 個重複就可以滿
+        RightSaberMaterial.SetFloat("_scale_range", RightCurrentScale);  // 目前是設定 0.5 就是滿的
         // left stick
         if (LeftCurrentScale < LeftTargetScale)
         {
@@ -69,7 +70,7 @@ public class ScaleRangeController : MonoBehaviour
         }
 
         // Apply to material
-        LeftSaberMaterial.SetFloat("_scale_range", LeftCurrentScale);  // 目前是設定 0.5 就是滿的，也就是 history 裡面有 5 個重複就可以滿
+        LeftSaberMaterial.SetFloat("_scale_range", LeftCurrentScale);  // 目前是設定 0.5 就是滿的
     }
 
 

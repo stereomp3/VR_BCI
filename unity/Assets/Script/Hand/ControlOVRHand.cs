@@ -10,7 +10,7 @@ public class ControlOVRHand : MonoBehaviour
     {
         leftHand = transform.GetComponent<OVRHand>();
         leftHand.enabled = false;
-        leftHand.gameObject.SetActive(true); // hand is always show
+        leftHand.gameObject.SetActive(true); // 确保手部模型始终显示
         // leftHand.EnableHandTracking = false;
         // leftHand. = false; 
     }

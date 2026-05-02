@@ -79,7 +79,6 @@ public class SaberSlicer : MonoBehaviour
             StartCoroutine(FadeOutAndDestroy(upperHull, 2f));
             StartCoroutine(FadeOutAndDestroy(lowerHull, 2f));
         }
-        if (GM.setLogCallback != null) GM.setLogCallback.Invoke(0, LogType.Cut); // 紀錄 log 到 log.txt
     }
 
     IEnumerator FadeOutAndDestroy(GameObject obj, float duration)
@@ -104,6 +103,5 @@ public class SaberSlicer : MonoBehaviour
         exitPoint = transform.position;
         Instantiate(cut_effect, other.transform.position, Quaternion.identity); // spawn cut effect
         SliceCube(other.gameObject);
-        GM.onSaberCutCallback.Invoke(); // 處裡 UI 計分或是其他相關事件
     }
 }
