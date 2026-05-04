@@ -159,7 +159,7 @@ torch.cuda.is_available()
 * game_state.py: state machine，用於各個 state 的切換
 * **main_start.py**: 程式碼開始點
 
-tools 為新增歌曲會用到
+tools 為新增歌曲會用到，與 create_MInp.py 為把 CSV 與 TXT 轉換成 numpy 取出 MI 資料的檔案
 
 
 
