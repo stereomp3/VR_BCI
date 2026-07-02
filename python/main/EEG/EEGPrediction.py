@@ -3,9 +3,6 @@ import torch.nn as nn
 import numpy as np
 import torch
 import threading
-from braindecode.models import ShallowFBCSPNet
-from main.EEG.models import SCCNet
-from MI_train import load_shallowfbcsp_params, load_sccnet_params
 from torch.utils.data import TensorDataset
 import main.Utils.config as config
 import main.Utils.preprocess as preprocess
@@ -17,9 +14,8 @@ class EEGPredictor:  # 調整模型需要改 self.model，和 self.load_fun 方�
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         # self.load_check_point_path = config.TRAINED_CHECKPOINT
         self.load_check_point_path = global_value.NOW_TRAINED_CHECKPOINT
-        self.model = ShallowFBCSPNet  # SCCNet
-        self.load_fun = load_shallowfbcsp_params  # load shallow net parameter, load_sccnet_params
-        self.model_arg = self.set_model_arg()
+        self.model = config.USE_MODEL
+        self.model_arg = config.LOAD_MODEL_PARAM
         self.model = self.init_model()
         self.predict_eeg_stop_event = threading.Event()
         self.predict_eeg_thread = None
@@ -63,7 +59,7 @@ class EEGPredictor:  # 調整模型需要改 self.model，和 self.load_fun 方�
         if self.is_updating:  # 防止一直進來，出現 crash 的問題
             return
         self.is_updating = True
-        self.model = ShallowFBCSPNet  # SCCNet
+        self.model = config.USE_MODEL
         self.model = self.init_model()
         self.is_updating = False
 
@@ -73,13 +69,11 @@ class EEGPredictor:  # 調整模型需要改 self.model，和 self.load_fun 方�
         y = torch.tensor(label_list).long()
         return TensorDataset(X, y)
 
-    def set_model_arg(self):
-        simulate_x = np.zeros((1, config.N_CHANNELS, config.SAMPLE_RATE))  # (sample, channel, trial)
-        simulate_y = np.zeros((1, config.N_Class))  # (trail, n class)
-        dataset = self.to_dataset(simulate_x, simulate_y)  # 這邊是為了要對應 load_conformer_params 才使用這個 (懶得改 XD
-        return self.load_fun(dataset)  # load_shallowfbcsp_params
-
     def predict_loop(self):
+        if config.verbose:  # 用來統計
+            inference_times = []
+            stat_start_time = time.perf_counter()
+
         while not self.predict_eeg_stop_event.is_set():
             if global_value.eeg_buffer.shape[1] >= config.BUFFER_SIZE:
                 if self.is_updating:
@@ -97,7 +91,20 @@ class EEGPredictor:  # 調整模型需要改 self.model，和 self.load_fun 方�
                 # print(f"shape: {x_batch.shape}") # (1,15,500) (trial, channel, sample)
                 with torch.no_grad():
                     if not self.is_updating:
+                        if config.verbose:  # ===== 開始計時 =====
+                            start = time.perf_counter()
+
                         outputs = self.model(x_batch)  # (2,) [-1, 2]
+
+                        # GPU 要同步，不然時間會不準
+                        if self.device.type == "cuda":
+                            torch.cuda.synchronize()
+
+                        if config.verbose:  # ===== 結束計時 =====
+                            end = time.perf_counter()
+                            inference_time = (end - start) * 1000  # ms
+                            inference_times.append(inference_time)
+
                         # print(outputs)
                         prediction = int(torch.argmax(outputs).cpu().item())
                         # print(f"Prediction: {prediction}")
@@ -106,6 +113,21 @@ class EEGPredictor:  # 調整模型需要改 self.model，和 self.load_fun 方�
                         # 推送到 TCP
                         if self.tcp_server:
                             self.tcp_server.broadcast(f"{prediction}")
+
+                        if config.verbose:  # 每5秒輸出一次統計
+                            now = time.perf_counter()
+                            if now - stat_start_time >= 5:
+                                if inference_times:
+                                    print(
+                                        f"{config.TAGS.INFO.value} [Inference] "
+                                        f"Count={len(inference_times)}, "
+                                        f"Avg={np.mean(inference_times):.2f} ms, "
+                                        f"Min={np.min(inference_times):.2f} ms, "
+                                        f"Max={np.max(inference_times):.2f} ms"
+                                    )
+
+                                inference_times.clear()
+                                stat_start_time = now
                         time.sleep(config.PREDICTION_INTERVAL)
 
 

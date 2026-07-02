@@ -3,6 +3,8 @@
 """
 from enum import Enum
 import os
+from braindecode.models import ShallowFBCSPNet, EEGNetv4, EEGConformer, ATCNet
+from main.EEG.models import SCCNet
 
 RECEIVE_CYGNUS_LSL_STREAM = "Cygnus-329018-RawEEG"
 # RECEIVE_UNITY_LSL_STREAM = "UnityMarkerStream"
@@ -23,13 +25,19 @@ PREDICTION_INTERVAL = 0.01  # seconds between predictions # 目前暫時沒用 #
 band_pass_low = 1
 band_pass_high = 40
 
+# ShallowFBCSPNet, EEGNetv4, EEGConformer, ATCNet, SCCNet
+USE_MODEL = ShallowFBCSPNet  # 使用的模型，在 EEG_Train.py、EEGPrediction.py 裡面會用到
+LOAD_MODEL_PARAM = dict(n_chans=len(channel_index), n_outputs=N_Class, n_times=SAMPLE_RATE, )  # braindecode
+# LOAD_MODEL_PARAM = dict(samples=SAMPLE_RATE, channels=len(channel_index), n_classes=N_Class, sfreq=500, ) # SCCNet
+verbose = False
+
 is_simulated_unity = False  # use in EEG_Calibration, UnityMarkerReader # 改成 TCP 後用到較少 # 目前不要動
-is_simulated_eeg = True  # use in CygnusEEGReader True, 真正測試要改成 False
+is_simulated_eeg = False  # use in CygnusEEGReader True, 真正測試要改成 False
 
 SAVE_CSV = True
 # --- 路徑設定開始 (使用 os 自動偵測) ---
 _current_dir = os.path.dirname(os.path.abspath(__file__))
-BASE_FILE = os.path.dirname(_current_dir) # 取得上一層 main 資料夾
+BASE_FILE = os.path.dirname(_current_dir)  # 取得上一層 main 資料夾
 
 __REALTIME_BASE_FILE = os.path.join(BASE_FILE, "real_time_data")
 CSV_FILENAME = os.path.join(__REALTIME_BASE_FILE, "eeg_record.csv")
@@ -38,6 +46,8 @@ PT_DATA_FILENAME = os.path.join(__REALTIME_BASE_FILE, "data.pt")
 
 
 # ---- Run 子資料夾相關函式 ----
+
+
 def getRunDataDir():
     """根據目前 global_value.runCount 回傳對應的 run 資料夾路徑，並自動建立資料夾"""
     import main.Utils.global_value as global_value
@@ -61,6 +71,7 @@ def getRunPtFilename():
     """回傳目前 run 資料夾下的 PT 檔案路徑"""
     return f"{getRunDataDir()}data.pt"
 
+
 EEG_CHECKPOINT_MAIN_BASE_FILE = os.path.join(BASE_FILE, "EEG", "checkpoint_main\\")
 EEG_CHECKPOINT_TMP_BASE_FILE = os.path.join(BASE_FILE, "EEG", "checkpoints\\")
 
@@ -79,6 +90,8 @@ SENT_UNITY_CALIBRATION_DONE_STR = "SENT_UNITY_CALIBRATION_DONE_STR"
 group_note_num = 5  # 一個 group 幾個 note，和 unity 那邊一樣
 CALIBRATION_FINISH_STR = "calibration done"  # 用於 EEG_Train.py，MI_train.py 訓練完成後回到 EEG_Train 並觸發
 REPLAY_BUFFER_LIMIT = 320  # 單一類別最大容量，20 trial × 16 windows = 320，兩類共 40 trial
+
+
 class GameSTATE(Enum):
     Calibration = "Calibration"
     BeatSaber = "BeatSaber"

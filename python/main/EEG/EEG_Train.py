@@ -8,9 +8,7 @@ from torch.utils.data import TensorDataset
 import torch
 import torch.nn.functional as F
 import random
-from main.EEG.MI_train import BraindecodeTrainer, OnlineCalibrationTrainer, load_shallowfbcsp_params, load_sccnet_params
-from braindecode.models import ShallowFBCSPNet
-from main.EEG.models import SCCNet
+from main.EEG.MI_train import BraindecodeTrainer, OnlineCalibrationTrainer
 import main.Utils.config as config
 import main.Utils.preprocess as preprocess
 import shutil  # use for copy model
@@ -323,28 +321,23 @@ class EEGFineTunePipeline:
         self.batch_size = 8
         # self.channel_index = [7, 8, 9, 12, 13, 14, 17, 18, 19, 21, 22, 23, 27, 28, 29]
         self.channel_index = config.channel_index
-        self.lr = 1e-4
-        self.epochs = 2  # 少量資料 fine-tune 1~3 test
+        self.lr = 1e-4  # 1e-4
+        self.epochs = 2  # 少量資料 fine-tune 1~4 test
         self.strides = 100
         self.segment_len = 500
         self.seed = 42
         self.ft = True
         self.tcp_server = tcp_server
         self.trainer = None
-        self.save_path = global_value.NOW_TRAINED_CHECKPOINT # tmp
+        self.save_path = global_value.NOW_TRAINED_CHECKPOINT  # tmp
 
     # 根據上面的 run 下去改，這邊為初始化 trainer，因為 trainer 有 buffer，所以需要最開始初始化一次
     def init_pipeline(self):
-        params = dict(
-            n_chans=len(config.channel_index),
-            n_outputs=config.N_Class,
-            n_times=config.SAMPLE_RATE,
-        )
         self.trainer = OnlineCalibrationTrainer(
-            model_class=ShallowFBCSPNet,  # 使用模型
-            model_kwargs=params,  # 對應模型參數
+            model_class=config.USE_MODEL,  # 使用模型
+            model_kwargs=config.LOAD_MODEL_PARAM,  # 對應模型參數
             batch_size=self.batch_size,
-            num_epochs=self.epochs,  # test 1~3
+            num_epochs=self.epochs,  # test 1~4
             lr=self.lr,
             ft=self.ft
         )
@@ -444,11 +437,10 @@ class EEGTrainingPipeline:
 
     def run_training(self):
         dataset, dataset_val = self.set_the_ft_set()
-        # params = load_sccnet_params(dataset)
-        params = load_shallowfbcsp_params(dataset)
+        params = config.LOAD_MODEL_PARAM
 
         # ft is use the pretrain model to continue train
-        run_braindecode_training(ShallowFBCSPNet, dataset, dataset_val, epochs=self.epochs,
+        run_braindecode_training(config.USE_MODEL, dataset, dataset_val, epochs=self.epochs,
                                  batch_size=self.batch_size, lr=self.lr, freeze_layers=False, params=params,
                                  seed=self.seed, ft=True, tcp_server=self.tcp_server)  # ft=False
 

@@ -25,11 +25,18 @@ data_lookup_table = {  # 暫時不使用
     config.GameSTATE.BeatSaber.value: [],
 }
 
-train_np_data = []  # 取代 data_lookup_table
-# train_np_data = [
-#     "D:\\CECNL_lab\\lab_project\\VR\\VR-BCI_beat_saber_python\\main\\real_time_data\\data_20251111_041320.pt",
-#     "D:\\CECNL_lab\\lab_project\\VR\\VR-BCI_beat_saber_python\\main\\real_time_data\\data_20251111_041814.pt",
-#     "D:\\CECNL_lab\\lab_project\\VR\\VR-BCI_beat_saber_python\\main\\real_time_data\\data_20251111_045219.pt",]
+# train_np_data = []  # 取代 data_lookup_table
+train_np_data = [
+    "D:\\CECNL_lab\\lab_project\\VR\\VR-BCI_beat_saber_python\\main\\real_time_data\\run6\\data_20260629_204218.pt",
+    "D:\\CECNL_lab\\lab_project\\VR\\VR-BCI_beat_saber_python\\main\\real_time_data\\run6\\data_20260629_204245.pt",
+    "D:\\CECNL_lab\\lab_project\\VR\\VR-BCI_beat_saber_python\\main\\real_time_data\\run6\\data_20260629_204311.pt",
+    "D:\\CECNL_lab\\lab_project\\VR\\VR-BCI_beat_saber_python\\main\\real_time_data\\run6\\data_20260629_204342.pt",
+    "D:\\CECNL_lab\\lab_project\\VR\\VR-BCI_beat_saber_python\\main\\real_time_data\\run6\\data_20260629_204409.pt",
+    "D:\\CECNL_lab\\lab_project\\VR\\VR-BCI_beat_saber_python\\main\\real_time_data\\run6\\data_20260629_204440.pt",
+    "D:\\CECNL_lab\\lab_project\\VR\\VR-BCI_beat_saber_python\\main\\real_time_data\\run6\\data_20260629_204508.pt",
+    "D:\\CECNL_lab\\lab_project\\VR\\VR-BCI_beat_saber_python\\main\\real_time_data\\run6\\data_20260629_204537.pt",
+    "D:\\CECNL_lab\\lab_project\\VR\\VR-BCI_beat_saber_python\\main\\real_time_data\\run6\\data_20260629_204605.pt",
+    "D:\\CECNL_lab\\lab_project\\VR\\VR-BCI_beat_saber_python\\main\\real_time_data\\run6\\data_20260629_204631.pt",]
 
 # model_trained.pth 會用在最開始的模型，model.pth 用於當作 base model ft 的模型
 models_name = []  # 顯示在 unity 的模型 # 會讀取 config.EEG_CHECKPOINT_MAIN_BASE_FILE 底下所有模型名稱，然後在切換場景重新載入 (game_state)

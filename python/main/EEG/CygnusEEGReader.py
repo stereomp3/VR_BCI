@@ -9,7 +9,7 @@ import numpy as np
 from datetime import datetime
 from main.Utils.some_functions import rename_file_with_time
 import os
-
+from pylsl import local_clock
 
 class EEGReader():
     def __init__(self):
@@ -46,6 +46,7 @@ class EEGReader():
         Optionally write each sample + timestamp + marker to CSV.
         """
         self.build_csv_file()
+
         first_ts_lsl, ts, ts_lsl = None, None, None
         count = 0.000
         inlet = None
@@ -58,7 +59,14 @@ class EEGReader():
                 # global_value.eeg_buffer = np.hstack((global_value.eeg_buffer, sample))
                 time.sleep(0.1 / config.SAMPLE_RATE)  # 模擬 sample rate 500, 0.002 穩一點所以 0.0002，讓他一定有資料讀取
             else:
+                # recv_time = local_clock()
+
                 sample, ts = inlet.pull_sample(timeout=0.0)  # 可以在執行這個之前先清空 # 這裡拿到 sample 為 list
+                # if sample is None or ts is None:
+                #     continue
+                # latency = recv_time - ts
+                # print(latency * 1000, "ms")
+
                 if first_ts_lsl is None:
                     first_ts_lsl = ts
                 if sample is None:

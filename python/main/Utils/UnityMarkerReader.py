@@ -19,6 +19,7 @@ import main.Utils.LSL as LSL
 import re
 from main.Utils.some_functions import rename_file_with_time
 from main.Utils.TCPServer import TCPServer
+import time
 
 
 # class UnityLSLReader:
@@ -149,11 +150,21 @@ class UnityTCPReader:
         pat = re.compile(r'Trial\s+(\d+)\s+(START|CUT|END):\s*([\d\.]+)(?:\s+LABEL:\s*(\d+))?', re.IGNORECASE)
         pat_eyes = re.compile(r'(Close eyes|Open eyes):\s*([\d\.]+)', re.IGNORECASE)
         m = pat.match(msg)
+
         if not m:  # 沒有比對到 MI，判斷 eyes 邏輯
             m = pat_eyes.match(msg)
         if m:
             global_value.unity_marker_string_log = msg
+
             print(f"{config.TAGS.INFO.value} set unity_marker_string_log")
+            if config.verbose:
+                try:
+                    if m.group(3):
+                        tms = (float(m.group(3)) - time.time()) * 1000  # ms = 1000s
+                        print(f"{config.TAGS.INFO.value} [TCP Latency] {tms} ms")
+                except IndexError:
+                    pass
+
             if self.save_csv and self.csv_file:
                 try:
                     self.csv_file.write(f"{msg}\n")

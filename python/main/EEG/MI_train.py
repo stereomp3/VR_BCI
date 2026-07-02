@@ -8,8 +8,6 @@ import torch
 import torch.nn as nn
 import numpy as np
 from torch.utils.data import DataLoader, TensorDataset
-from braindecode.models import ShallowFBCSPNet
-from main.EEG.models import SCCNet
 import torch.optim as optim
 import main.Utils.config as config
 import main.Utils.global_value as global_value
@@ -17,7 +15,7 @@ import torch.nn.functional as F
 
 
 class BraindecodeTrainer:
-    def __init__(self, dataset, val_dataset, model_class=ShallowFBCSPNet, model_kwargs=None,
+    def __init__(self, dataset, val_dataset, model_class=config.USE_MODEL, model_kwargs=None,
                  batch_size=16, num_epochs=100, lr=1e-4, device=None, ft=False):
         self.dataset = dataset
         self.val_dataset = val_dataset
@@ -227,7 +225,7 @@ def load_sccnet_params(dataset):
 
 
 class OnlineCalibrationTrainer(BraindecodeTrainer):
-    def __init__(self, dataset=None, val_dataset=None, model_class=SCCNet, model_kwargs=None,
+    def __init__(self, dataset=None, val_dataset=None, model_class=config.USE_MODEL, model_kwargs=None,
                  batch_size=16, num_epochs=100, lr=1e-4, device=None, ft=False):
         super().__init__(dataset, val_dataset, model_class, model_kwargs,
                          batch_size, num_epochs, lr, device, ft)
@@ -279,6 +277,11 @@ class OnlineCalibrationTrainer(BraindecodeTrainer):
         接收 Dataset，unpack 後進行 online training
         dataset: TensorDataset (X, Y_OneHot, Failures)
         """
+        # 用來統計
+        if config.verbose:
+            # ===== 開始計時 =====
+            start = time.perf_counter()
+
         # 防呆：如果 dataset 是空的 (例如沒有切出任何 window)
         if dataset is None or len(dataset) == 0:
             print(f"{config.TAGS.WARNING} No data in dataset for online training.")
@@ -389,4 +392,14 @@ class OnlineCalibrationTrainer(BraindecodeTrainer):
         print(
             f"{config.TAGS.INFO} Online update finished. Avg Loss: {avg_loss / (self.num_epochs * len(online_loader)):.4f}")
 
+        if config.verbose:  # ===== 結束計時 =====
+            if self.device.type == "cuda":
+                torch.cuda.synchronize()
+            end = time.perf_counter()
+            inference_time = (end - start) * 1000  # ms = 1000s
+            if inference_time:
+                print(
+                    f"{config.TAGS.INFO.value} [Online Adaptation] "
+                    f"Inference={inference_time:.2f} ms, "
+                )
         return total_loss
