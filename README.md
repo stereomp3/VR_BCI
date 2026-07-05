@@ -27,7 +27,7 @@ python 版本: 3.11.8
 requirement 在 python 資料夾下面
 
 ```
-pip install -r requirements.txt
+python/conda create --name <env> python/requirements.txt
 ```
 
 torch install，==注意 torch 需要根據自己的需求下載==，每個人指令會根據電腦設備不一樣
@@ -162,6 +162,22 @@ torch.cuda.is_available()
 tools 為新增歌曲會用到，與 create_MInp.py 為把 CSV 與 TXT 轉換成 numpy 取出 MI 資料的檔案
 
 
+
+在 saliency 資料夾的部分，有以下文件
+
+* 4_fold_CV_13.py、4_fold_CV_13_all.py、4_fold_CV_22.py、4_fold_CV_22_all.py: 
+
+  * 沒有 all 代表會 train 每個 run，並根據每個 run 最好的 model 產生 saliency map (`record.pkl`、`epochs.pkl`)，使用 XBrainLab 的套件建立的 map。
+  * 13, 22 分別代表不同 channel 設定
+  * 基本上以上程式碼差不多，改的地方只有 channel 設定和 subject list 是否要合併的部分
+
+* data_process_np.py、MI_train.py、Models.py: 跟上面的處裡方式相同，特別提出來是因為這個資料夾下，就使用到這些，我把他們提取出來
+
+* draw_saliency_topo_PSD.py: 根據剛剛的 (`record.pkl`、`epochs.pkl`) 來產生出多個 saliecy map
+
+* draw_saliency_topo_PSD_all.py: 產生所有 subject 的大圖，把上面生出的圖片合併
+
+  
 
 ## noVR
 
