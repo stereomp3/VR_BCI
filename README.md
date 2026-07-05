@@ -134,9 +134,7 @@ torch.cuda.is_available()
 
 程式碼執行的時候，在訓練完成模型會拿取 loss 最低的，然後放入到 `EEG\checkpoint_main` 下面，存成 `c_xxx` 的形式。
 
-主要在 `main` 下面
-
-
+> 主要在 `main` 資料夾的部分，有以下文件 (主要運行程式碼)
 
 * EEG
 * real_time_data
@@ -159,25 +157,37 @@ torch.cuda.is_available()
 * game_state.py: state machine，用於各個 state 的切換
 * **main_start.py**: 程式碼開始點
 
-tools 為新增歌曲會用到，與 create_MInp.py 為把 CSV 與 TXT 轉換成 numpy 取出 MI 資料的檔案
+
+
+> 在 `else/tools` 資料夾的部分，有以下文件
+
+* create_MInp.py: 把受試者儲存的 data csv 與 log txt 轉換成 numpy 取出 MI 資料的檔案
+
+* map3to2.py: 如果 map 太新或是版本不對，需要轉換，轉換過後沒有東西，代表目前版本正確。
+* dat_process.py: 根據間隔刪除多餘的 note。
 
 
 
-在 saliency 資料夾的部分，有以下文件
+> 在 `else/saliency ` 資料夾的部分，有以下文件
 
 * 4_fold_CV_13.py、4_fold_CV_13_all.py、4_fold_CV_22.py、4_fold_CV_22_all.py: 
 
   * 沒有 all 代表會 train 每個 run，並根據每個 run 最好的 model 產生 saliency map (`record.pkl`、`epochs.pkl`)，使用 XBrainLab 的套件建立的 map。
   * 13, 22 分別代表不同 channel 設定
   * 基本上以上程式碼差不多，改的地方只有 channel 設定和 subject list 是否要合併的部分
-
 * data_process_np.py、MI_train.py、Models.py: 跟上面的處裡方式相同，特別提出來是因為這個資料夾下，就使用到這些，我把他們提取出來
-
 * draw_saliency_topo_PSD.py: 根據剛剛的 (`record.pkl`、`epochs.pkl`) 來產生出多個 saliecy map
-
 * draw_saliency_topo_PSD_all.py: 產生所有 subject 的大圖，把上面生出的圖片合併
 
-  
+
+
+> 在  `else/raw_data  ` 資料夾的部分，有以下文件
+
+* nasa_tlx_chart.py: 這個紀錄問卷內容，運行會跑出對應圖表
+* TFA2.py: 分析 raw data，看有沒有 ERD，主要比較左右 Trial，channel 看所有 C 區內容
+* eye_move_detect.py: 分析 raw data，看有沒有眼動，並存 fp1 fp2 分析圖表
+
+
 
 ## noVR
 
