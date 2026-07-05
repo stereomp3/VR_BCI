@@ -185,7 +185,7 @@ torch.cuda.is_available()
 
 * nasa_tlx_chart.py: 這個紀錄問卷內容，運行會跑出對應圖表
 * TFA2.py: 分析 raw data，看有沒有 ERD，主要比較左右 Trial，channel 看所有 C 區內容
-* eye_move_detect.py: 分析 raw data，看有沒有眼動，並存 fp1 fp2 分析圖表
+* eog_erp_analysis.py: 分析 raw data，看有沒有眼動，並存 fp1 fp2 分析圖表
 
 
 
