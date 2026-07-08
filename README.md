@@ -1,5 +1,7 @@
 # VR_BCI
 
+交接文件: https://hackmd.io/@cecnlCECNL/SkbdNyUmfe
+
 ![](./picture/SystemOverviewAdaptive.png)
 
 啟動步驟: Python 執行 `python/main/main_start.py`，unity 再執行程式碼。
