@@ -12,7 +12,7 @@ import torch.optim as optim
 import main.Utils.config as config
 import main.Utils.global_value as global_value
 import torch.nn.functional as F
-
+import copy
 
 class BraindecodeTrainer:
     def __init__(self, dataset, val_dataset, model_class=config.USE_MODEL, model_kwargs=None,
@@ -237,6 +237,8 @@ class OnlineCalibrationTrainer(BraindecodeTrainer):
         # 線上學習的參數
         self.online_lr = lr
         self.fail_weight = 2.0  # 失敗數據的懲罰權重 2.0，目前權重 1 代表與一般訓練一樣
+        self.use_val = config.adaption_use_val
+
         # ----------------------------
         print(f"{config.TAGS.INFO.value} [DEBUG] OnlineCalibrationTrainer init: "
               f"buffer_limit={config.REPLAY_BUFFER_LIMIT}, "
@@ -265,12 +267,27 @@ class OnlineCalibrationTrainer(BraindecodeTrainer):
         if label_idx not in global_value.replay_buffer:
             global_value.replay_buffer[label_idx] = []
 
+        new_data = (x.cpu(), y.cpu(), weight)
+
         # 存入全域 Buffer (轉 CPU 以節省 VRAM)
-        global_value.replay_buffer[label_idx].append((x.cpu(), y.cpu(), weight))
+        global_value.replay_buffer[label_idx].append(new_data)
 
         # [關鍵邏輯] FIFO: 如果該類別數量超過上限，移除該類別「最舊」的一筆
         if len(global_value.replay_buffer[label_idx]) > config.REPLAY_BUFFER_LIMIT:
-            global_value.replay_buffer[label_idx].pop(0)
+            # Update buffer 滿了：移除最舊的一筆，並把這筆丟給 Val buffer
+            popped_data = global_value.replay_buffer[label_idx].pop(0)
+            if self.use_val:
+                global_value.replay_buffer_val[label_idx].append(popped_data)
+        else:
+            # Update buffer 還沒滿：代表是最一開始，同步將新資料加到 Val buffer
+            if self.use_val:
+                global_value.replay_buffer_val[label_idx].append(new_data)
+
+        # 3. 判斷 Val Buffer 是否超過上限 (FIFO 邏輯，容量為 0.4 倍)
+        if self.use_val:
+            val_limit = int(config.REPLAY_BUFFER_LIMIT * 0.4)
+            if len(global_value.replay_buffer_val[label_idx]) > val_limit:
+                global_value.replay_buffer_val[label_idx].pop(0)
 
     def online_train(self, dataset):
         """
@@ -358,6 +375,20 @@ class OnlineCalibrationTrainer(BraindecodeTrainer):
         # ==========================================
         # 4. 訓練迴圈
         # ==========================================
+        # 準備 Validation Loader
+        val_loader = None
+        if self.use_val:
+            val_samples = []
+            for label_idx in global_value.replay_buffer_val:
+                val_samples.extend(global_value.replay_buffer_val[label_idx])
+            if val_samples:
+                val_x = torch.stack([item[0] for item in val_samples])
+                val_y = torch.stack([item[1] for item in val_samples])
+                val_w = torch.tensor([item[2] for item in val_samples], dtype=torch.float32)
+                val_dataset = TensorDataset(val_x, val_y, val_w)
+                val_loader = DataLoader(val_dataset, batch_size=self.batch_size, shuffle=False)
+        best_loss = float('inf')  # 紀錄最低 loss # 正無限大
+        best_model_state = None  # 紀錄最佳權重
         avg_loss, total_loss = 0, 0
         for epoch in range(self.num_epochs):
             for inputs, labels, weights in online_loader:
@@ -382,6 +413,33 @@ class OnlineCalibrationTrainer(BraindecodeTrainer):
                 total_loss += weighted_loss.item()
 
             avg_loss = total_loss / (self.num_epochs * len(online_loader))
+
+            # Epoch 結束後計算 Validation Loss
+            current_eval_loss = avg_loss  # 預設使用 Train Loss 作為判斷標準
+            if self.use_val and val_loader is not None:
+                self.model.eval()
+                val_total_loss = 0
+                with torch.no_grad():
+                    for v_inputs, v_labels, v_weights in val_loader:
+                        v_inputs = v_inputs.to(self.device).float()
+                        v_labels = v_labels.to(self.device).float()
+                        v_weights = v_weights.to(self.device).float()
+
+                        v_outputs = self.model(v_inputs.squeeze(1))
+                        v_target_indices = torch.argmax(v_labels, dim=1)
+                        v_loss_per_sample = self.criterion_none(v_outputs, v_target_indices)
+                        v_weighted_loss = (v_loss_per_sample * v_weights).mean()
+                        val_total_loss += v_weighted_loss.item()
+
+                current_eval_loss = val_total_loss / len(val_loader)
+                self.model.train()  # 切回 Train 模式
+
+            # 判斷是否為最低 Loss，並 Deepcopy 儲存
+            if current_eval_loss < best_loss:
+                best_loss = current_eval_loss
+                best_model_state = copy.deepcopy(self.model.state_dict())
+
+            avg_loss = total_loss / (self.num_epochs * len(online_loader))
             torch.save({
                 'epoch': epoch,
                 'model_state_dict': self.model.state_dict(),
@@ -391,6 +449,11 @@ class OnlineCalibrationTrainer(BraindecodeTrainer):
 
         print(
             f"{config.TAGS.INFO} Online update finished. Avg Loss: {avg_loss / (self.num_epochs * len(online_loader)):.4f}")
+
+        if best_model_state is not None:
+            self.model.load_state_dict(best_model_state)
+            torch.save({'model_state_dict': best_model_state},
+                       f"{config.EEG_CHECKPOINT_TMP_BASE_FILE}{tag.lower()}-best.pth")
 
         if config.verbose:  # ===== 結束計時 =====
             if self.device.type == "cuda":

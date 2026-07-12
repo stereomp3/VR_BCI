@@ -62,6 +62,7 @@ class EEGReader():
                 # recv_time = local_clock()
 
                 sample, ts = inlet.pull_sample(timeout=0.0)  # 可以在執行這個之前先清空 # 這裡拿到 sample 為 list
+                # print(sample)
                 # if sample is None or ts is None:
                 #     continue
                 # latency = recv_time - ts
@@ -74,8 +75,9 @@ class EEGReader():
                 data = np.array(sample).reshape(-1)  # 不加入這個會顯示 [float]，而不是 float，用這個寫入文件
                 # sample = np.array(sample[5:8] + sample[10:13] + sample[15:18] +
                 #                   sample[20:23] + sample[25:28]).reshape(-1, 1)  # shape: (15,1) # 3 # 15 16 17
-                sample = np.array(sample[5:8] + sample[10:13] + sample[15:18] +  # shape: (13,1)
-                                  sample[20:23] + sample[26:27]).reshape(-1, 1)  # 3 # 15 16 17 拿掉 P3 P4
+                # sample = np.array(sample[5:8] + sample[10:13] + sample[15:18] +  # shape: (13,1)
+                #                   sample[20:23] + sample[26:27]).reshape(-1, 1)  # 3 # 15 16 17 拿掉 P3 P4
+                sample = np.array(sample).reshape(-1, 1)  # 3 # 15 16 17 拿掉 P3 P4
                 # sample = np.array([sample[i - 2] for i in config.channel_index])  # 根據設定 channel 做讀取
                 # sample = data.reshape(config.N_CHANNELS, 1)
                 # arr = np.array(sample[0:4] + sample[5:8] + sample[10:13] + sample[15:18] +

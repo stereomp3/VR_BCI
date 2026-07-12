@@ -15,8 +15,9 @@ TCP_HOST = "0.0.0.0"  # all
 SAMPLE_RATE = 500
 # 主要針對資料讀取的 channel，但是在 CygnusEEGReader.py read_eeg 裡面要對應 channel 做額外處裡
 # channel_index = [7, 8, 9, 12, 13, 14, 17, 18, 19, 21, 22, 23, 27, 28, 29] # 15
-channel_index = [7, 8, 9, 12, 13, 14, 17, 18, 19, 21, 22, 23, 28]  # 13
-N_CHANNELS = 13  # use n channel_index to train, prediction and read buffer data (CygnusEEGReader.py)
+# channel_index = [7, 8, 9, 12, 13, 14, 17, 18, 19, 21, 22, 23, 28]  # 13
+channel_index = list(range(32))  # 32
+N_CHANNELS = 32  # use n channel_index to train, prediction and read buffer data (CygnusEEGReader.py)
 EEG_CHANNELS = 32  # use 22 channel, (32 channel eeg cap
 N_Class = 2  # left 1, right 0
 WINDOW_SECONDS = 1.0
@@ -26,13 +27,13 @@ band_pass_low = 1
 band_pass_high = 40
 
 # ShallowFBCSPNet, EEGNetv4, EEGConformer, ATCNet, SCCNet
-USE_MODEL = ShallowFBCSPNet  # 使用的模型，在 EEG_Train.py、EEGPrediction.py 裡面會用到
-LOAD_MODEL_PARAM = dict(n_chans=len(channel_index), n_outputs=N_Class, n_times=SAMPLE_RATE, )  # braindecode
-# LOAD_MODEL_PARAM = dict(samples=SAMPLE_RATE, channels=len(channel_index), n_classes=N_Class, sfreq=500, ) # SCCNet
+USE_MODEL = SCCNet  # 使用的模型，在 EEG_Train.py、EEGPrediction.py 裡面會用到
+# LOAD_MODEL_PARAM = dict(n_chans=len(channel_index), n_outputs=N_Class, n_times=SAMPLE_RATE, )  # braindecode
+LOAD_MODEL_PARAM = dict(samples=SAMPLE_RATE, channels=len(channel_index), n_classes=N_Class, sfreq=500, ) # SCCNet
 verbose = False
 
 is_simulated_unity = False  # use in EEG_Calibration, UnityMarkerReader # 改成 TCP 後用到較少 # 目前不要動
-is_simulated_eeg = False  # use in CygnusEEGReader True, 真正測試要改成 False
+is_simulated_eeg = True  # use in CygnusEEGReader True, 真正測試要改成 False
 
 SAVE_CSV = True
 # --- 路徑設定開始 (使用 os 自動偵測) ---
@@ -90,6 +91,12 @@ SENT_UNITY_CALIBRATION_DONE_STR = "SENT_UNITY_CALIBRATION_DONE_STR"
 group_note_num = 5  # 一個 group 幾個 note，和 unity 那邊一樣
 CALIBRATION_FINISH_STR = "calibration done"  # 用於 EEG_Train.py，MI_train.py 訓練完成後回到 EEG_Train 並觸發
 REPLAY_BUFFER_LIMIT = 320  # 單一類別最大容量，20 trial × 16 windows = 320，兩類共 40 trial
+
+# online adaption parameter
+adaption_batch_size = 8
+adaption_learning_rate = 1e-3
+adaption_epochs = 4
+adaption_use_val = True
 
 
 class GameSTATE(Enum):

@@ -46,7 +46,7 @@ def tee_log(log_file=None):
 # ----------------------------
 # Main flow
 # ----------------------------
-@tee_log(f"{config.BASE_FILE}log.txt")
+@tee_log(f"log_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt")
 def main_flow():
     # marker_outlet = LSL.setup_lsl_outlet(config.TO_UNITY_LSL_STREAM)  # to unity
     game = Game()

@@ -247,14 +247,19 @@ def run_braindecode_training(model_class, dataset, dataset_valid, epochs=1000, b
         name = "ft"
     hist = trainer.train(freeze_layer=freeze_layers, tcp_server=tcp_server, patience=30)  # patience 代表 early stop 的判斷次數
     best_loss_epoch = np.argmin(hist["val_loss"])
-    best_loss_epoch_path = f"{config.EEG_CHECKPOINT_TMP_BASE_FILE}{name}-epoch{best_loss_epoch}.pth"
+
+    if config.adaption_use_val:
+        best_loss_epoch_path = f"{config.EEG_CHECKPOINT_TMP_BASE_FILE}{name}-best.pth"
+    else:
+        best_loss_epoch_path = f"{config.EEG_CHECKPOINT_TMP_BASE_FILE}{name}-epoch{best_loss_epoch}.pth"
+
     save_path = get_next_version_path(global_value.NOW_TRAINED_CHECKPOINT)
     shutil.copyfile(best_loss_epoch_path, save_path)
     global_value.NOW_TRAINED_CHECKPOINT = save_path
     # shutil.copyfile(best_loss_epoch_path, config.TRAINED_CHECKPOINT)
 
     print(f"\n{config.TAGS.INFO.value} Calibration done, "
-          f"copy model {name}-epoch{best_loss_epoch}.pth to the {save_path}")
+          f"copy model {best_loss_epoch_path} to the {save_path}")
     # print(f"best_epoch_ft: {best_loss_epoch}, "
     #       f"acc: {hist['acc'][best_loss_epoch]:.4f}, loss: {hist['loss'][best_loss_epoch]}, "
     #       f"val acc: {hist['val_acc'][best_loss_epoch]:.4f}, val loss: {hist['val_loss'][best_loss_epoch]}")
@@ -318,11 +323,11 @@ class EEGFineTunePipeline:
     """
 
     def __init__(self, tcp_server=None):  # old: lsl_outlet=None # update one
-        self.batch_size = 8
+        self.batch_size = config.adaption_batch_size
         # self.channel_index = [7, 8, 9, 12, 13, 14, 17, 18, 19, 21, 22, 23, 27, 28, 29]
         self.channel_index = config.channel_index
-        self.lr = 1e-4  # 1e-4
-        self.epochs = 2  # 少量資料 fine-tune 1~4 test
+        self.lr = config.adaption_learning_rate  # 1e-4
+        self.epochs = config.adaption_epochs  # 少量資料 fine-tune 1~4 test
         self.strides = 100
         self.segment_len = 500
         self.seed = 42
@@ -368,13 +373,17 @@ class EEGFineTunePipeline:
         print(f"{config.TAGS.INFO.value} Online update complete. Loss: {loss:.4f}")
         print(f"{config.TAGS.INFO.value} 模型已根據最新狀況 (包含失敗經驗) 進行修正。")
 
-        best_loss_epoch_path = f"{config.EEG_CHECKPOINT_TMP_BASE_FILE}{name}-epoch{self.epochs - 1}.pth"
+        if config.adaption_use_val:
+            best_loss_epoch_path = f"{config.EEG_CHECKPOINT_TMP_BASE_FILE}{name}-best.pth"
+        else:
+            best_loss_epoch_path = f"{config.EEG_CHECKPOINT_TMP_BASE_FILE}{name}-epoch{self.epochs - 1}.pth"
+
         # save_path = get_next_version_path(global_value.NOW_TRAINED_CHECKPOINT)
         shutil.copyfile(best_loss_epoch_path, self.save_path)
         global_value.NOW_TRAINED_CHECKPOINT = self.save_path  # 都存在同樣的地方太多 unity 那邊會很難看，fine tune 存在同一個地方
 
         print(f"\n{config.TAGS.INFO.value} Calibration done, "
-              f"copy model {name}-epoch{self.epochs - 1}.pth to the {self.save_path}")
+              f"copy model {best_loss_epoch_path} to the {self.save_path}")
         if self.tcp_server:
             time.sleep(0.5)  # 讓系統可以判斷
             self.tcp_server.broadcast(config.CALIBRATION_FINISH_STR)

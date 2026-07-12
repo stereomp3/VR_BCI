@@ -128,7 +128,7 @@ class UnityTCPReader:
             if state.value == msg:
                 global_value.unity_marker_string_stage = msg
                 print(f"{config.TAGS.INFO.value} set unity_marker_string_stage")
-        if msg == config.RECEIVE_UNITY_MODEL_STR:
+        if msg == config.RECEIVE_UNITY_MODEL_STR:  # send exist model
             name = config.SENT_UNITY_MODEL_STR
             for i in global_value.models_name:
                 name += config.SEPARATE_STR
@@ -136,7 +136,7 @@ class UnityTCPReader:
             tcp_server.broadcast(name)
             print(f"{config.TAGS.INFO.value} SENT_UNITY_MODEL_STR {name}")
         text = msg.split("@@@")
-        if text[0] == config.RECEIVE_UNITY_SELECT_MODEL_STR:  # send_python_tcp_select_model_str@@@model_name
+        if text[0] == config.RECEIVE_UNITY_SELECT_MODEL_STR:  # send_python_tcp_select_model_str@@@model_name # 選擇使用的模型
             if len(text) == 2:
                 global_value.update_model = True
                 global_value.unity_update_model_str = f"{config.EEG_CHECKPOINT_MAIN_BASE_FILE}{text[1]}"

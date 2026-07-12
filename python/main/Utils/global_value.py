@@ -25,18 +25,10 @@ data_lookup_table = {  # 暫時不使用
     config.GameSTATE.BeatSaber.value: [],
 }
 
-# train_np_data = []  # 取代 data_lookup_table
-train_np_data = [
-    "D:\\CECNL_lab\\lab_project\\VR\\VR-BCI_beat_saber_python\\main\\real_time_data\\run6\\data_20260629_204218.pt",
-    "D:\\CECNL_lab\\lab_project\\VR\\VR-BCI_beat_saber_python\\main\\real_time_data\\run6\\data_20260629_204245.pt",
-    "D:\\CECNL_lab\\lab_project\\VR\\VR-BCI_beat_saber_python\\main\\real_time_data\\run6\\data_20260629_204311.pt",
-    "D:\\CECNL_lab\\lab_project\\VR\\VR-BCI_beat_saber_python\\main\\real_time_data\\run6\\data_20260629_204342.pt",
-    "D:\\CECNL_lab\\lab_project\\VR\\VR-BCI_beat_saber_python\\main\\real_time_data\\run6\\data_20260629_204409.pt",
-    "D:\\CECNL_lab\\lab_project\\VR\\VR-BCI_beat_saber_python\\main\\real_time_data\\run6\\data_20260629_204440.pt",
-    "D:\\CECNL_lab\\lab_project\\VR\\VR-BCI_beat_saber_python\\main\\real_time_data\\run6\\data_20260629_204508.pt",
-    "D:\\CECNL_lab\\lab_project\\VR\\VR-BCI_beat_saber_python\\main\\real_time_data\\run6\\data_20260629_204537.pt",
-    "D:\\CECNL_lab\\lab_project\\VR\\VR-BCI_beat_saber_python\\main\\real_time_data\\run6\\data_20260629_204605.pt",
-    "D:\\CECNL_lab\\lab_project\\VR\\VR-BCI_beat_saber_python\\main\\real_time_data\\run6\\data_20260629_204631.pt",]
+train_np_data = []  # 取代 data_lookup_table
+# train_np_data = [
+#     "D:\\CECNL_lab\\lab_project\\VR\\VR-BCI_beat_saber_python\\main\\real_time_data\\run6\\data_20260629_204218.pt",
+#     "D:\\CECNL_lab\\lab_project\\VR\\VR-BCI_beat_saber_python\\main\\real_time_data\\run6\\data_20260629_204245.pt",]
 
 # model_trained.pth 會用在最開始的模型，model.pth 用於當作 base model ft 的模型
 models_name = []  # 顯示在 unity 的模型 # 會讀取 config.EEG_CHECKPOINT_MAIN_BASE_FILE 底下所有模型名稱，然後在切換場景重新載入 (game_state)
@@ -49,3 +41,4 @@ NOW_TRAINED_CHECKPOINT = f"{config.EEG_CHECKPOINT_MAIN_BASE_FILE}c_000.pth"
 # key 為類別 index (0, 1)，value 為 (x_tensor, y_tensor, weight) 的 list
 # 在 OnlineCalibrationTrainer.online_train 中使用，buffer_limit 由 config.REPLAY_BUFFER_LIMIT 控制
 replay_buffer = {0: [], 1: []}
+replay_buffer_val = {0: [], 1: []}
