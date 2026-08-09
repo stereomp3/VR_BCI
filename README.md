@@ -180,6 +180,38 @@ torch.cuda.is_available()
 * data_process_np.py、MI_train.py、Models.py: 跟上面的處裡方式相同，特別提出來是因為這個資料夾下，就使用到這些，我把他們提取出來
 * draw_saliency_topo_PSD.py: 根據剛剛的 (`record.pkl`、`epochs.pkl`) 來產生出多個 saliecy map
 * draw_saliency_topo_PSD_all.py: 產生所有 subject 的大圖，把上面生出的圖片合併
+* draw_saliency_topo_PSD_pair.py: 產生一個 subject 兩個 session 的圖片
+* sum_up_acc_with_log_and_output_list.py: generate_metric_plot.py
+
+
+
+準確度相關:
+* `python 4_fold_CV_13.py`: 所有 subjuct 跑每 run 的準確度，會出來 log，可以透過 `sum_up_acc_with_log_and_output_list.py` 分析 log 檔案
+* `python 4_fold_CV_13_all.py`: 所有 subject 跑每個 session 的準確度，會出來 log，可以透過 `sum_up_acc_with_log_and_output_list.py` 分析 log 檔案
+* `python sum_up_acc_with_log_and_output_list.py`: 可以讀取上面的 log，以及實驗的 log，抓取準確度 (online and offline)，整理成可以直接用 python 拿的格式。![image](.\picture\log.png)
+* `python generate_metric_plot_each_run`: 繪製各 run 所有指標變化![image](.\picture\metric_each_run.png)
+* `python generate_metric_WSI.py`: 生成 Within-Session Improvement 的圖片 ![image](.\picture\metric_WSI.png)
+
+
+腦波指標相關:
+* `python compute_saliency_metric.py`: 計算 MBSR 與 MSFI 的指標，可以填入到以下的文件內。
+
+統計檢定:
+* `python generate_metric_ttest.py`: 生成各指標的統計檢定，可以選  t test, Wilcoxon t test
+* `python generate_metric_plot.py`: 生成對應 plot metric 統整 (需要根據前面整理的條件填入對應數值)
+
+查看受試者狀態:
+* `python generate_metric_sum01.py`: 找出受試者全部指標 (Acc, MBSR, MSFI) 皆落在 前 30% 的 Sub、進步幅度前 3 名 (S2 - S1 的三指標差值總和)、高特徵但低表現 (潛在學習者)。
+* `python generate_metric_sum02.py`: 找出受試者排名，對於所有指標有個別表格。
+
+
+
+
+Saliency map
+* `python draw_saliency_topo_PSD.py`: 把 saliency map 單張生成，這個最花時間。==這個要先執行== ![image](.\picture\Sub44_s1_c0_combined.png)
+* `python draw_saliency_topo_PSD_all.py`: 根據以經生好的圖片，生成全部 saliency map (draw_saliency_topo_PSD_all.py)![image](.\picture\22_AllSubjects_s1_Label0.png)
+* `python draw_saliency_topo_PSD_pair.py`: 根據以經生好的圖片，生成成對 (兩個 session 同個人的 saliency map)(draw_saliency_topo_PSD_all.py)
+![image](.\picture\Sub44_s1_c0_combined.png)
 
 
 
@@ -187,9 +219,16 @@ torch.cuda.is_available()
 
 * nasa_tlx_chart.py: 這個紀錄問卷內容，運行會跑出對應圖表
 * TFA2.py: 分析 raw data，看有沒有 ERD，主要比較左右 Trial，channel 看所有 C 區內容
-* eog_erp_analysis.py: 分析 raw data，看有沒有眼動，並存 fp1 fp2 分析圖表
+* eye_move_detect.py: 分析 raw data，看有沒有眼動，並存 fp1 fp2 分析圖表
+* find_hardware_performance.py: 先設定 python config.py `verbose = True` 以後，使用這個程式碼，抓出模型 real time 運行效能
+* find_best_parameter.py: 透過這個程式碼，抓取 offline_simulation 出來的 log
 
 
+
+> 在 offline_simulation 資料夾下面
+
+* 跑 `online_simulation.py`，透過這個程式碼，模擬 online 的內容，測試最佳的參數設定 (online adaptive 更新多少次、需要多少 trial 更新、learning rate 設多少比較好、是否要 validation set、batch size 設多少比較好)，並記錄到 log 裡面，透過 `else/raw_data/find_best_parameter.py ` 得到最終結果
+* 裡面的程式碼，基本上很多與 main 一樣，不過為了不依賴 main 裡面的內容，所以再次寫一份到這個資料夾下面，提供  `online_simulation.py` 使用
 
 ## noVR
 
