@@ -194,7 +194,9 @@ torch.cuda.is_available()
 
 
 腦波指標相關:
-* `python compute_saliency_metric.py`: 計算 MBSR 與 MSFI 的指標，可以填入到以下的文件內。
+
+* `python compute_saliency_metric.py`: 計算 MBSR 與 MSFI 的指標 (需要先跑過 `4_fold_CV_13.py` 類型的程式碼，取得 saliency map matrix 檔案)，可以填入到以下的文件內。
+* `sum_up_all_metric_with_log_and_output_list.py`: 與 `python sum_up_acc_with_log_and_output_list.py` 類似，不過多加入 `python compute_saliency_metric.py` 產生的 log 內容，會多產出指標
 
 統計檢定:
 * `python generate_metric_ttest.py`: 生成各指標的統計檢定，可以選  t test, Wilcoxon t test
