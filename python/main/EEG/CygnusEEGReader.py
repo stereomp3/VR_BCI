@@ -60,14 +60,16 @@ class EEGReader():
                 # global_value.eeg_buffer = np.hstack((global_value.eeg_buffer, sample))
                 time.sleep(0.1 / config.SAMPLE_RATE)  # 模擬 sample rate 500, 0.002 穩一點所以 0.0002，讓他一定有資料讀取
             else:
-                recv_time = local_clock()
+                if config.verbose:
+                    recv_time = local_clock()
 
                 sample, ts = inlet.pull_sample(timeout=0.0)  # 可以在執行這個之前先清空 # 這裡拿到 sample 為 list
                 # print(sample)
                 if sample is None or ts is None:
                     continue
-                latency = recv_time - ts
-                latency_values.append(latency)
+                if config.verbose:
+                    latency = recv_time - ts
+                    latency_values.append(latency)
 
                 if first_ts_lsl is None:
                     first_ts_lsl = ts
