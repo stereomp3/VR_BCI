@@ -52,7 +52,7 @@ public class GameManager : MonoBehaviour
     public OnNoteSpawn onNoteSpawnCallback; // 0 event
     public OnAutoSaber onAutoSaberCallback;  // 1 event in AutoSaber，trigger in BeatmapSpawner.cs，處裡 autosaber 位置移動
     public SetupAutoSaber setupAutoSaberCallback;  // 1 event in GameManager，trigger in BeatmapSpawner.cs，處裡顯示 autosaber 隱藏 hand
-    public OnSaberCut onSaberCutCallback;  // 1 event in ScoreManager，1 event in CalibrationBeatmapSpawner，trigger in TimeLogger.cs，處裡切的時候相關事件
+    public OnSaberCut onSaberCutCallback;  // 1 event in ScoreManager，1 event in BeatmapSpawner，trigger in TimeLogger.cs，處裡切的時候相關事件
     public SetLog setLogCallback;  // 1 event in TimeLogger，trigger in NoteLogTrigger and SaberSlicer and EEGTrain，紀錄 Log
     public OnGameStop onGameStopCallback;  // 用在 BeatSaberInforLoader.cs 停歌，和 BeatmapSpawener 停送 note，在 GameManager 裡面雙手合起來的時候呼叫
     public OnGameStart onGameStartCallback;  // 用在 BeatSaberInforLoader.cs 和 BeatmapSpawener 停送 note，在 OptionMenu 設定 Canvas button 觸發的時候呼叫

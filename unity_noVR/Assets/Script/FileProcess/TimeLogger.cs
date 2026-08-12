@@ -55,11 +55,27 @@ public class TimeLogger : MonoBehaviour
         AS = AutoSaber.instance;
         pre_wrong_hit = AS.wrong_hit;
     }
+    private float timer;
+    private int frameCount;
+    private float fps;
+
+    void Update()
+    {
+        frameCount++;
+        timer += Time.deltaTime;
+
+        if (timer >= 0.5f)
+        {
+            fps = frameCount / timer;
+            frameCount = 0;
+            timer = 0;
+        }
+    }
 
     public void LogStringAndTime(int label, LogType type)
     {
         double timestamp = Timer.GetUnixTimestamp();
-
+        // Debug.Log($"@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ FPS: {fps:F1}");
         string log = $"Trial {trialCount} START: {timestamp:F3} LABEL: {label}";
         if (type == LogType.Cut) log = $"Trial {trialCount} CUT: {timestamp:F3}";
         if (type == LogType.End) log = $"Trial {trialCount} END: {timestamp:F3} LABEL: {label}";
@@ -84,14 +100,18 @@ public class TimeLogger : MonoBehaviour
                     if (AS.wrong_hit != pre_wrong_hit && score < 0.75) 
                     {
                         TC.send_string_to_python(Config.send_python_tcp_calibration_start);
-                        Debug.Log("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@: correct 4 trial");
                     }
                     else // 分數大於等於 0.75 或是 4 個 trial 全對，就就不更新模型
                     {
                         TC.send_string_to_python("Correct 4 trial or acc > 0.75. Don't update model");
+                        Debug.Log("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@: correct 4 trial");
                     }
                     pre_wrong_hit = AS.wrong_hit;
                 }
+            }
+            else
+            {
+                TC.send_string_to_python($"[INFO] [Unity FPS]: {fps:F1}");
             }
         }
     }

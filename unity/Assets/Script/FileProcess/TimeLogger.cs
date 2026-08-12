@@ -56,10 +56,28 @@ public class TimeLogger : MonoBehaviour
         pre_wrong_hit = AS.wrong_hit;
     }
 
+    private float timer;
+    private int frameCount;
+    private float fps;
+
+    void Update()
+    {
+        frameCount++;
+        timer += Time.deltaTime;
+
+        if (timer >= 0.5f)
+        {
+            fps = frameCount / timer;
+            frameCount = 0;
+            timer = 0;
+        }
+    }
+
     public void LogStringAndTime(int label, LogType type)
     {
         double timestamp = Timer.GetUnixTimestamp();
-
+        // Debug.Log($"@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ FPS: {fps:F1}");
+        TC.send_string_to_python($"[INFO] [Unity FPS]: {fps:F1}");
         string log = $"Trial {trialCount} START: {timestamp:F3} LABEL: {label}";
         if (type == LogType.Cut) log = $"Trial {trialCount} CUT: {timestamp:F3}";
         if (type == LogType.End) log = $"Trial {trialCount} END: {timestamp:F3} LABEL: {label}";
