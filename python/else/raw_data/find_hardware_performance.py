@@ -56,12 +56,12 @@ try:
                 lsl_latency.append(float(match_lsl.group(1)))
                 continue
 
-    # # 4. 轉換完成後，使用 list 的方式印出結果
-    # print(f"prediction_latency = {prediction_latency}")
-    # print(f"tcp_latency = {tcp_latency}")
-    # print(f"online_adaption = {online_adaption}")
-    # print(f"fps = {fps}")
-    # print(f"lsl_latency = {lsl_latency}")
+    # 4. 轉換完成後，使用 list 的方式印出結果
+    print(f"prediction_latency = {prediction_latency}")
+    print(f"tcp_latency = {tcp_latency}")
+    print(f"online_adaption = {online_adaption}")
+    print(f"fps = {fps}")
+    print(f"lsl_latency = {lsl_latency}")
 
 except FileNotFoundError:
     print(f"錯誤：找不到檔案 '{log_file_path}'，請確認檔案路徑是否正確。")
