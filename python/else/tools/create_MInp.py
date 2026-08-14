@@ -332,7 +332,7 @@ class EEGDataLoader:
 
 
 # 設定參數
-# channel_index = [7, 8, 9, 12, 13, 14, 17, 18, 19, 21, 22, 23, 28] # 13 channel
+# channel_index = [7, 8, 9, 12, 13, 14, 17, 18, 19, 22, 23, 24, 28] # 13 channel
 # 22 channel, all
 channel_index = [2, 3, 4, 5, 7, 8, 9, 12, 13, 14, 17, 18, 19, 22, 23, 24, 27, 28, 29, 31, 32, 33]
 base_dir = r"/mnt/middle/tmp/2025/MIEXP"

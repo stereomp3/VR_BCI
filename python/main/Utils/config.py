@@ -14,8 +14,8 @@ TCP_PORT = 50007
 TCP_HOST = "0.0.0.0"  # all
 SAMPLE_RATE = 500
 # 主要針對資料讀取的 channel，但是在 CygnusEEGReader.py read_eeg 裡面要對應 channel 做額外處裡
-# channel_index = [7, 8, 9, 12, 13, 14, 17, 18, 19, 21, 22, 23, 27, 28, 29] # 15
-# channel_index = [7, 8, 9, 12, 13, 14, 17, 18, 19, 21, 22, 23, 28]  # 13
+# channel_index = [7, 8, 9, 12, 13, 14, 17, 18, 19, 22, 23, 24, 27, 28, 29] # 15
+# channel_index = [7, 8, 9, 12, 13, 14, 17, 18, 19, 22, 23, 24, 28]  # 13
 channel_index = list(range(32))  # 32
 N_CHANNELS = 32  # use n channel_index to train, prediction and read buffer data (CygnusEEGReader.py)
 EEG_CHANNELS = 32  # use 22 channel, (32 channel eeg cap

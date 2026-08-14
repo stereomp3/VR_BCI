@@ -80,7 +80,10 @@ class EEGReader():
                 #                   sample[20:23] + sample[25:28]).reshape(-1, 1)  # shape: (15,1) # 3 # 15 16 17
                 # sample = np.array(sample[5:8] + sample[10:13] + sample[15:18] +  # shape: (13,1)
                 #                   sample[20:23] + sample[26:27]).reshape(-1, 1)  # 3 # 15 16 17 拿掉 P3 P4
-                sample = np.array(sample).reshape(-1, 1)  # 3 # 15 16 17 拿掉 P3 P4
+                if config.EEG_CHANNELS != 32:
+                    sample = np.array([sample[i - 2] for i in config.channel_index])  # 根據設定 channel 做讀取
+                else:
+                    sample = np.array(sample).reshape(-1, 1) 
                 # sample = np.array([sample[i - 2] for i in config.channel_index])  # 根據設定 channel 做讀取
                 # sample = data.reshape(config.N_CHANNELS, 1)
                 # arr = np.array(sample[0:4] + sample[5:8] + sample[10:13] + sample[15:18] +
