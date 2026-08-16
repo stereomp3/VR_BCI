@@ -60,7 +60,7 @@ def cat_all_data(data_list):
     return np.concatenate(all_x_data, axis=0), np.concatenate(all_y_data, axis=0)
 
 # ==========================================
-# ⭐ EOG Event Detection (Robust MAD & Sustained Gaze)
+# EOG Event Detection (Robust MAD & Sustained Gaze)
 # ==========================================
 def detect_eog_events(x_data, ch_names, fs=500, blink_k=5.0, saccade_k=3.0):
     if 'Fp1' not in ch_names or 'Fp2' not in ch_names:
@@ -73,7 +73,6 @@ def detect_eog_events(x_data, ch_names, fs=500, blink_k=5.0, saccade_k=3.0):
     fp1_raw = x_data[:, fp1_idx, :].copy()
     fp2_raw = x_data[:, fp2_idx, :].copy()
     
-    # Lowpass filter for stable event detection
     fp1_filtered = mne.filter.filter_data(fp1_raw, sfreq=fs, l_freq=None, h_freq=10.0, verbose=False)
     fp2_filtered = mne.filter.filter_data(fp2_raw, sfreq=fs, l_freq=None, h_freq=10.0, verbose=False)
 
@@ -105,7 +104,6 @@ def detect_eog_events(x_data, ch_names, fs=500, blink_k=5.0, saccade_k=3.0):
         veog_t = veog_all[i, :]
         heog_t = heog_all[i, :]
         
-        # Baseline Correction
         base_fp1 = np.mean(fp1_t[:base_samples])
         base_fp2 = np.mean(fp2_t[:base_samples])
         base_veog = np.mean(veog_t[:base_samples])
@@ -131,9 +129,6 @@ def detect_eog_events(x_data, ch_names, fs=500, blink_k=5.0, saccade_k=3.0):
         'Look Right': look_right_duration
     }
 
-# ==========================================
-# Cheating Evaluation
-# ==========================================
 def evaluate_cheating_suspicion(stats_A, stats_B, task_name_A, task_name_B):
     suspicions = []
     for event_type in ['Look Left', 'Look Right']:
@@ -154,173 +149,90 @@ def evaluate_cheating_suspicion(stats_A, stats_B, task_name_A, task_name_B):
     return suspicions
 
 # ==========================================
-# ⭐ Unified Comprehensive EOG Dashboard
+# 📊 圖表：客製化 4 個 Trial Raw EEG 比較圖
 # ==========================================
-def plot_comprehensive_eog_dashboard(x_cls_L, x_cls_R, stats_L, stats_R, fs, ch_names, mapped_subject, session, cls_names, save_dir):
+def plot_custom_four_trials(x_cls_L, x_cls_R, fs, ch_names, mapped_subject, session, save_dir):
+    """
+    配置:
+      - 總標題: 英文 Raw EEG 描述
+      - 子圖標題: Trial 1, Trial 2, Trial 3, Trial 4
+      - 左上 (Trial 1): T070 (Index 69) Right Hand, 藍色, 標註 1.0 ~ 2.0s
+      - 右上 (Trial 2): T070 (Index 69) Left Hand, 紅色, 無標註
+      - 左下 (Trial 3): T081 (Index 80) Right Hand, 藍色, 標註 0.5 ~ 1.5s
+      - 右下 (Trial 4): T081 (Index 80) Left Hand, 紅色, 無標註
+    """
     if 'Fp1' not in ch_names or 'Fp2' not in ch_names:
-        print("⚠️ 找不到 Fp1 或 Fp2，無法繪製儀表板。")
+        print("⚠️ 找不到 Fp1 或 Fp2，無法繪製單一 Trial 比較圖。")
         return
         
     fp1_idx, fp2_idx = ch_names.index('Fp1'), ch_names.index('Fp2')
     time_axis = np.arange(x_cls_L.shape[2]) / fs
     
-    fig = plt.figure(figsize=(20, 16))
-    # ⭐ 標題使用 mapped_subject
-    fig.suptitle(f"[Subject {mapped_subject} - Session {session}] Comprehensive EOG Artifact Dashboard", fontsize=20, fontweight='bold', y=0.95)
-    gs = fig.add_gridspec(4, 2, height_ratios=[1, 1, 1, 1], hspace=0.6, wspace=0.2)
+    fig, axes = plt.subplots(2, 2, figsize=(18, 14), sharex=True, sharey=False)
+    fig.suptitle(f"Raw EEG Waveforms across 4 Selected Motor Imagery Trials (Subject {mapped_subject}, Session {session})", 
+                 fontsize=18, fontweight='bold', y=0.98)
 
-    # ---------------------------------------------------------
-    # ① 左上 (Panel 1): Stacked 顯示
-    # ---------------------------------------------------------
-    ax_single = fig.add_subplot(gs[0:2, 0])
-    check_trial = 70
-    t_idx_L = min(check_trial, len(x_cls_L)-1) if len(x_cls_L) > 0 else 0
-    t_idx_R = min(check_trial, len(x_cls_R)-1) if len(x_cls_R) > 0 else 0
-    
     def get_filtered_trial_with_baseline(x_data, t_idx):
+        if t_idx >= len(x_data):
+            return None, None
         fp1_t = x_data[t_idx, fp1_idx, :]
         fp2_t = x_data[t_idx, fp2_idx, :]
         fp1_t = mne.filter.filter_data(fp1_t, sfreq=fs, l_freq=None, h_freq=10.0, verbose=False)
         fp2_t = mne.filter.filter_data(fp2_t, sfreq=fs, l_freq=None, h_freq=10.0, verbose=False)
         return fp1_t - np.mean(fp1_t), fp2_t - np.mean(fp2_t)
 
-    fp1_L_single, fp2_L_single = get_filtered_trial_with_baseline(x_cls_L, t_idx_L) if len(x_cls_L) > 0 else (None, None)
-    fp1_R_single, fp2_R_single = get_filtered_trial_with_baseline(x_cls_R, t_idx_R) if len(x_cls_R) > 0 else (None, None)
+    # 4 個 Panel 的客製配置: (ax, title, x_data, index, color, task_name, highlight_span)
+    panels_config = [
+        (axes[0, 0], "Trial 1", x_cls_R, 69, 'blue', 'Right Hand', (0.5, 1.5)),
+        (axes[0, 1], "Trial 2", x_cls_L, 69, 'red',  'Left Hand',  None),
+        (axes[1, 0], "Trial 3", x_cls_R, 80, 'blue', 'Right Hand', (1.0, 2.0)),
+        (axes[1, 1], "Trial 4", x_cls_L, 80, 'red',  'Left Hand',  None),
+    ]
 
-    max_amp = 0
-    for sig in [fp1_L_single, fp2_L_single, fp1_R_single, fp2_R_single]:
-        if sig is not None:
-            max_amp = max(max_amp, np.max(np.abs(sig)))
-    offset = max_amp * 1.5 if max_amp > 0 else 80.0
-
-    ax_single.axhline(offset, color='gray', linestyle=':', alpha=0.6)
-    ax_single.axhline(0, color='gray', linestyle=':', alpha=0.6)
-
-    if fp1_L_single is not None:
-        ax_single.plot(time_axis, fp1_L_single + offset, color='red', linewidth=1.5, label=f'{cls_names[0]}')
-        ax_single.plot(time_axis, fp2_L_single, color='red', linewidth=1.5, alpha=0.7)
-    if fp1_R_single is not None:
-        ax_single.plot(time_axis, fp1_R_single + offset, color='blue', linewidth=1.5, label=f'{cls_names[1]}')
-        ax_single.plot(time_axis, fp2_R_single, color='blue', linewidth=1.5, alpha=0.7)
-
-    ax_single.set_yticks([0, offset])
-    ax_single.set_yticklabels(['Fp2', 'Fp1'], fontsize=16, fontweight='bold')
-    ax_single.set_ylim(-max_amp * 1.2, offset + max_amp * 1.2)
-    
-    ax_single.set_title(f"1. Single Trial (Trial {check_trial}) EOG (10Hz Lowpass) Stacked", fontsize=14, fontweight='bold')
-    ax_single.set_xlabel("Time (s)")
-    ax_single.legend(loc='upper right')
-    ax_single.grid(True, linestyle='--', alpha=0.3)
-
-    # ---------------------------------------------------------
-    # ② 右上 (Panel 2): EOG 統計長條圖
-    # ---------------------------------------------------------
-    ax_stats = fig.add_subplot(gs[0:2, 1])
-    event_types = ['Blinks', 'Look Left', 'Look Right']
-    
-    means_L = [np.mean(stats_L[k]) for k in event_types]
-    errs_L = [sem(stats_L[k]) if len(stats_L[k])>0 else 0 for k in event_types]
-    means_R = [np.mean(stats_R[k]) for k in event_types]
-    errs_R = [sem(stats_R[k]) if len(stats_R[k])>0 else 0 for k in event_types]
-    
-    x_pos = np.arange(len(event_types))
-    width = 0.35  
-    
-    ax_stats.bar(x_pos - width/2, means_L, width, yerr=errs_L, label=cls_names[0], color='red', alpha=0.7, capsize=5)
-    ax_stats.bar(x_pos + width/2, means_R, width, yerr=errs_R, label=cls_names[1], color='blue', alpha=0.7, capsize=5)
-    
-    ax_stats.set_title("2. EOG Event Statistics (Sustained Gaze Logic)", fontsize=14, fontweight='bold')
-    ax_stats.set_ylabel("Blinks (Count) / Saccades (Seconds)")
-    ax_stats.set_xticks(x_pos)
-    ax_stats.set_xticklabels(['Blinks\n(Count)', 'Look Left\n(Duration in sec)', 'Look Right\n(Duration in sec)'])
-    ax_stats.legend(loc='upper right')
-    ax_stats.grid(axis='y', linestyle='--', alpha=0.6)
-
-    # ---------------------------------------------------------
-    # ③ 左下 (Panel 3): Average Raw Fp1 / Fp2 (拆成上下兩圖)
-    # ---------------------------------------------------------
-    ax_avg_fp1 = fig.add_subplot(gs[2, 0])
-    ax_avg_fp2 = fig.add_subplot(gs[3, 0], sharex=ax_avg_fp1)
-    
-    fp1_L_mean = np.mean(x_cls_L[:, fp1_idx, :], axis=0) if len(x_cls_L) > 0 else np.zeros_like(time_axis)
-    fp1_R_mean = np.mean(x_cls_R[:, fp1_idx, :], axis=0) if len(x_cls_R) > 0 else np.zeros_like(time_axis)
-    fp2_L_mean = np.mean(x_cls_L[:, fp2_idx, :], axis=0) if len(x_cls_L) > 0 else np.zeros_like(time_axis)
-    fp2_R_mean = np.mean(x_cls_R[:, fp2_idx, :], axis=0) if len(x_cls_R) > 0 else np.zeros_like(time_axis)
-
-    ax_avg_fp1.plot(time_axis, fp1_L_mean, color='red', label=cls_names[0], linewidth=2)
-    ax_avg_fp1.plot(time_axis, fp1_R_mean, color='blue', label=cls_names[1], linewidth=2)
-    ax_avg_fp1.set_title("3-A. Fp1 Average Raw Signal", fontweight='bold')
-    ax_avg_fp1.set_ylabel("Amplitude (µV)")
-    ax_avg_fp1.grid(True, linestyle='--', alpha=0.5)
-
-    ax_avg_fp2.plot(time_axis, fp2_L_mean, color='red', label=cls_names[0], linewidth=2)
-    ax_avg_fp2.plot(time_axis, fp2_R_mean, color='blue', label=cls_names[1], linewidth=2)
-    ax_avg_fp2.set_title("3-B. Fp2 Average Raw Signal", fontweight='bold')
-    ax_avg_fp2.set_xlabel("Time (s)")
-    ax_avg_fp2.set_ylabel("Amplitude (µV)")
-    ax_avg_fp2.grid(True, linestyle='--', alpha=0.5)
-
-    # ---------------------------------------------------------
-    # ④ 右下 (Panel 4): Average EOG ERP (HEOG / VEOG 拆成上下兩圖)
-    # ---------------------------------------------------------
-    ax_erp_heog = fig.add_subplot(gs[2, 1])
-    ax_erp_veog = fig.add_subplot(gs[3, 1], sharex=ax_erp_heog)
-
-    def process_erp(x_data):
-        fp1 = x_data[:, fp1_idx, :]
-        fp2 = x_data[:, fp2_idx, :]
+    for ax, title, data_src, idx, line_color, task_name, span in panels_config:
+        fp1, fp2 = get_filtered_trial_with_baseline(data_src, idx)
         
-        fp1_filt = mne.filter.filter_data(fp1, sfreq=fs, l_freq=None, h_freq=10.0, verbose=False)
-        fp2_filt = mne.filter.filter_data(fp2, sfreq=fs, l_freq=None, h_freq=10.0, verbose=False)
-        
-        heog = fp1_filt - fp2_filt
-        veog = (fp1_filt + fp2_filt) / 2.0
-        
-        base_samples = int(fs * 0.5)
-        heog = heog - np.mean(heog[:, :base_samples], axis=1, keepdims=True)
-        veog = veog - np.mean(veog[:, :base_samples], axis=1, keepdims=True)
-        return heog, veog
+        if fp1 is None or fp2 is None:
+            ax.text(0.5, 0.5, "Trial Not Available", ha='center', va='center', transform=ax.transAxes)
+            ax.set_title(title, fontsize=14, fontweight='bold')
+            continue
 
-    heog_L, veog_L = process_erp(x_cls_L)
-    heog_R, veog_R = process_erp(x_cls_R)
+        # 計算垂直偏移量
+        max_amp = max(np.max(np.abs(fp1)), np.max(np.abs(fp2)))
+        offset = max_amp * 1.4 if max_amp > 0 else 60.0
 
-    h_mean_L, h_sem_L = np.mean(heog_L, axis=0), sem(heog_L, axis=0)
-    h_mean_R, h_sem_R = np.mean(heog_R, axis=0), sem(heog_R, axis=0)
-    v_mean_L, v_sem_L = np.mean(veog_L, axis=0), sem(veog_L, axis=0)
-    v_mean_R, v_sem_R = np.mean(veog_R, axis=0), sem(veog_R, axis=0)
+        ax.axhline(offset, color='gray', linestyle=':', alpha=0.5)
+        ax.axhline(0, color='gray', linestyle=':', alpha=0.5)
 
-    # HEOG
-    ax_erp_heog.plot(time_axis, h_mean_L, color='red', label=cls_names[0], linewidth=2)
-    ax_erp_heog.fill_between(time_axis, h_mean_L - h_sem_L, h_mean_L + h_sem_L, color='red', alpha=0.2)
-    ax_erp_heog.plot(time_axis, h_mean_R, color='blue', label=cls_names[1], linewidth=2)
-    ax_erp_heog.fill_between(time_axis, h_mean_R - h_sem_R, h_mean_R + h_sem_R, color='blue', alpha=0.2)
-    ax_erp_heog.axhline(0, color='black', linestyle='--', linewidth=1)
-    ax_erp_heog.set_title("4-A. Horizontal EOG ERP (HEOG = Fp1 - Fp2)", fontweight='bold')
-    ax_erp_heog.set_ylabel("Amplitude (µV)")
-    ax_erp_heog.grid(True, linestyle='--', alpha=0.5)
+        # 繪製波形 (Fp1 帶 Offset, Fp2 位於 0)
+        ax.plot(time_axis, fp1 + offset, color=line_color, linewidth=1.5, label=f'{task_name} (Fp1)')
+        ax.plot(time_axis, fp2, color=line_color, linewidth=1.5, label=f'{task_name} (Fp2)')
 
-    # VEOG
-    ax_erp_veog.plot(time_axis, v_mean_L, color='red', label=cls_names[0], linewidth=2)
-    ax_erp_veog.fill_between(time_axis, v_mean_L - v_sem_L, v_mean_L + v_sem_L, color='red', alpha=0.2)
-    ax_erp_veog.plot(time_axis, v_mean_R, color='blue', label=cls_names[1], linewidth=2)
-    ax_erp_veog.fill_between(time_axis, v_mean_R - v_sem_R, v_mean_R + v_sem_R, color='blue', alpha=0.2)
-    ax_erp_veog.axhline(0, color='black', linestyle='--', linewidth=1)
-    ax_erp_veog.set_title("4-B. Vertical EOG ERP (VEOG = (Fp1+Fp2)/2)", fontweight='bold')
-    ax_erp_veog.set_xlabel("Time (s)")
-    ax_erp_veog.set_ylabel("Amplitude (µV)")
-    ax_erp_veog.grid(True, linestyle='--', alpha=0.5)
+        # 透明紅色區塊標註
+        if span is not None:
+            ax.axvspan(span[0], span[1], color='red', alpha=0.2, label=f'Artifact Interval ({span[0]}–{span[1]}s)')
 
-    plt.tight_layout()
-    # ⭐ 儲存檔名使用 mapped_subject
-    save_path = os.path.join(save_dir, f"Sub{mapped_subject}_Sess{session}_EOG_Comprehensive_Dashboard.png")
+        ax.set_yticks([0, offset])
+        ax.set_yticklabels(['Fp2', 'Fp1'], fontsize=14, fontweight='bold')
+        ax.set_ylim(-offset * 0.9, offset * 1.9)
+        ax.set_title(title, fontsize=14, fontweight='bold')
+        ax.set_xlabel("Time (s)")
+        ax.set_ylabel("Amplitude (µV)")
+        ax.legend(loc='upper right', fontsize=10)
+        ax.grid(True, linestyle='--', alpha=0.3)
+
+    plt.tight_layout(rect=[0, 0, 1, 0.96])
+    
+    save_filename = f"Sub{mapped_subject}_Sess{session}_Raw_EEG_4Trials.png"
+    save_path = os.path.join(save_dir, save_filename)
     plt.savefig(save_path, bbox_inches='tight', dpi=150)
     plt.close(fig)
-    print(f"✅ 綜合眼動診斷儀表板已儲存: {save_path}")
+    print(f"✅ 圖片已成功儲存: {save_path}")
 
 # ==========================================
 # Main Execution Block
 # ==========================================
-@tee_log("eog_erp_analysis.txt")
+@tee_log("eog_erp_analysis_sub45_s2.txt")
 def main():
     fs = 500 
     ch_names = ['Fp1', 'Fp2', 'AF3', 'AF4', 'F3', 'Fz', 'F4', 'FC3', 'FCz', 'FC4', 'C3', 'Cz',
@@ -330,16 +242,9 @@ def main():
     tfa_root_dir = "EOG"
     os.makedirs(tfa_root_dir, exist_ok=True)
     
-    ids = [
-        "35", "37", "38", "40", "41", "42", "43", "44", "45", "47", "48", "50", 
-        "51", "52", "54", "55", "57", "58", "63", "64", "65", "68", "69", "70"
-    ]
-    # ids = [
-    #     "45" # 需要 80 check_trial 看的比較明顯
-    # ]
-    sessions = ["s1", "s2"]
+    ids = ["45"]
+    sessions = ["s2"]
 
-    # ⭐ 加入 ID 映射字典
     subjectMap = {
         "35": "01", "37": "02", "38": "03", "40": "04", "41": "05",
         "42": "06", "43": "07", "44": "08", "45": "09", "47": "10",
@@ -351,19 +256,14 @@ def main():
     global_cheating_report = {}
 
     for subject in ids:
-        # ⭐ 取得對應的 Map ID (若無則維持原始 ID)
         mapped_subject = subjectMap.get(subject, subject)
-        
-        # ⭐ 資料夾名稱使用轉換後的 ID
         subject_save_dir = os.path.join(tfa_root_dir, mapped_subject)
         os.makedirs(subject_save_dir, exist_ok=True)
         
         for session in sessions:
             print(f"\n{'='*20} Subject {mapped_subject} (Raw ID: {subject}), Session {session} Started {'='*20}")
             
-            # 讀取資料必須使用原始的 subject ID
             subject_session_dir = f"{base_dir}/{subject}/{session}"
-            
             mi_datas = [f"{subject_session_dir}/run{r}/mi_22.pt" for r in range(1, 8)]
             x_mi, y_mi = cat_all_data(mi_datas)
 
@@ -375,7 +275,6 @@ def main():
             x_mi_filtered = mne.filter.filter_data(x_mi, sfreq=fs, l_freq=1.0, h_freq=40.0, n_jobs=-1, verbose=False)
 
             classes = np.unique(y_mi)
-            
             if 0 in classes and 1 in classes:
                 cls_Left = 1
                 cls_Right = 0
@@ -400,13 +299,11 @@ def main():
                 else:
                     print(f"    ✅ 通過眼動檢定：未偵測到明顯的眼動作弊行為。")
 
-                # 直接存入 subject_save_dir，如您先前的設定
-                plot_comprehensive_eog_dashboard(
+                # ⭐ 繪製指定的 4 個 Trial Raw EEG 圖表
+                plot_custom_four_trials(
                     x_mi_cls_Left, x_mi_cls_Right, 
-                    stats_L, stats_R, 
                     fs, ch_names, 
-                    mapped_subject, session, # ⭐ 傳入 mapping 過的 ID 供繪圖使用
-                    cls_names=(task_name_Left, task_name_Right), 
+                    mapped_subject, session, 
                     save_dir=subject_save_dir
                 )
 
