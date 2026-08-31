@@ -15,12 +15,6 @@ file_offline_runs = "training_log_20260416_22.txt"
 file_offline_session = "training_log_20260416_22_all.txt"
 
 # MBSR / MSFI 統計結果 txt
-# 就是你貼出的：
-#
-# ### 表格: MBSR (%) - Session S1
-# ...
-# ### 表格: MSFI (%) - Session S2
-#
 file_metric = "compute_saliency_metric.txt"
 
 # Online log 資料夾
@@ -271,6 +265,7 @@ def format_metric_list(values):
 
     TMP_VALUE 維持：
         0.666
+        改 ...
     """
 
     result = []
@@ -278,7 +273,7 @@ def format_metric_list(values):
     for value in values:
 
         if abs(value - TMP_VALUE) < 1e-10:
-            result.append("0.666")
+            result.append('"..."')
 
         else:
             result.append(f"{value:.2f}")
@@ -1353,7 +1348,7 @@ def print_raw_data(raw_data):
                 for v in info["MBSR"]
             ):
                 mbsr_line += (
-                    "  # 0.666 tmp"
+                    "" # # 0.666 tmp
                 )
 
 
@@ -1377,7 +1372,7 @@ def print_raw_data(raw_data):
                 for v in info["MSFI"]
             ):
                 msfi_line += (
-                    "  # 0.666 tmp"
+                    "" # 0.666 tmp
                 )
 
 
