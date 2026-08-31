@@ -231,7 +231,7 @@ def format_normal_number(value, max_digits=3):
     """
 
     if abs(value - TMP_VALUE) < 1e-10:
-        return "0.666"
+        return '"..."'
 
     text = f"{value:.{max_digits}f}"
 
