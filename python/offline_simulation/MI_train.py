@@ -8,8 +8,11 @@ import torch
 import torch.nn as nn
 import numpy as np
 from torch.utils.data import DataLoader, TensorDataset
-from braindecode.models import ShallowFBCSPNet
 import torch.optim as optim
+try:
+    from braindecode.models import ShallowFBCSPNet
+except ImportError:
+    ShallowFBCSPNet = None
 import config as config
 import global_value as global_value
 import torch.nn.functional as F
@@ -139,6 +142,7 @@ class BraindecodeTrainer:
             history['val_loss'].append(val_loss)
             history['val_acc'].append(val_acc)
 
+            os.makedirs(config.EEG_CHECKPOINT_TMP_BASE_FILE, exist_ok=True)
             torch.save({
                 'epoch': epoch,
                 'model_state_dict': self.model.state_dict(),
@@ -437,6 +441,7 @@ class OnlineCalibrationTrainer(BraindecodeTrainer):
                 best_loss = current_eval_loss
                 best_model_state = copy.deepcopy(self.model.state_dict())
 
+            os.makedirs(config.EEG_CHECKPOINT_TMP_BASE_FILE, exist_ok=True)
             torch.save({
                 'epoch': epoch,
                 'model_state_dict': self.model.state_dict(),
