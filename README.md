@@ -138,6 +138,8 @@ torch.cuda.is_available()
 
 > 主要在 `main` 資料夾的部分，有以下文件 (主要運行程式碼)
 
+新增 `online_test_lsl_to_unity.py`、`quick_trainer.py` 用於快速訓練以及測試
+
 * EEG
 * real_time_data
   * checkpoint_main: 放主要使用模型的資料夾 (會出現在模型選擇裡面)
@@ -157,7 +159,7 @@ torch.cuda.is_available()
   * **UnityMarkerReader.py**: 接收 unity 傳來的東西，並回應，或是做對應處裡
   * file_pointer_reader.py: 紀錄文件讀取點，在 calibration 不需要重新讀取 CSV，加速運算處裡
 * game_state.py: state machine，用於各個 state 的切換
-* **main_start.py**: 程式碼開始點
+* **main_start.py**: 程式碼開始點 (目前移動到外面才吃的到 main module)
 
 
 
