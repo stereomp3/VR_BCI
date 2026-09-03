@@ -161,75 +161,181 @@ torch.cuda.is_available()
 
 
 
-> 在 `else/tools` 資料夾的部分，有以下文件
+> 在 `python/else` 資料夾的部分（離線分析、模型訓練與特徵管線）
 
-* create_MInp.py: 把受試者儲存的 data csv 與 log txt 轉換成 numpy 取出 MI 資料的檔案
+```text
+python/else/
+├── pipeline.py                      # 【一鍵全自動總管主程式】(整合前處理、訓練、統計出圖與受試者分群)
+├── metrics_summary.csv              # 【指標資料庫】(儲存 24 位受試者跨 Session 與 Run 的完整特徵數據)
+├── charts/                          # 【成果圖表目錄】(自動輸出所有長條圖、箱型圖、趨勢圖與 WSI 分析圖)
+│
+├── preprocessing/                   # 【1. 資料前處理】
+│   └── create_MInp.py               # 將受試者原始 EEG CSV 與 Log 檔轉換為 MI / Resting 的 .pt 檔案
+│
+├── training/                        # 【2. 模型訓練與交叉驗證】
+│   ├── Models.py                    # 模型架構定義 (SimpleEEGNet, SCCNet 等)
+│   ├── MI_train.py                  # 訓練與微調引擎 (BraindecodeTrainerCV 等)
+│   ├── train_cv.py                  # 交叉驗證訓練核心與 Saliency 特徵生成引擎
+│   ├── 4_fold_CV_13.py              # 13 通道單 Run 獨立訓練入口 (產生 record.pkl、epochs.pkl)
+│   ├── 4_fold_CV_13_all.py          # 13 通道全 Session 合併訓練入口
+│   ├── 4_fold_CV_22.py              # 22 通道單 Run 獨立訓練入口
+│   └── 4_fold_CV_22_all.py          # 22 通道全 Session 合併訓練入口
+│
+├── analysis/                        # 【3. 指標整合、統計與出圖】
+│   ├── analyze_metrics_and_plot.py  # 日誌解析、持久化儲存 CSV、Table 1-3 統計檢定與核心繪圖
+│   ├── subject_stratification.py    # 受試者多維度分群篩選與特徵診斷系統
+│   ├── compute_saliency_metric.py   # Saliency 指標 (Spectral / Spatial Saliency) 表格生成
+│   ├── generate_metric_ttest.py     # Table 1-3 統計檢定與線性混合效應模型 (LMM)
+│   ├── generate_metric_plot.py      # 長條圖與箱型圖繪製模組
+│   ├── generate_metric_WSI.py       # Within-Session Improvement 專用分析
+│   └── generate_metric_sum01.py     # 分群相容轉接外殼 (轉接 subject_stratification.py)
+│
+├── neuro_analysis/                  # 【4. 神經生理特徵與腦波診斷】
+│   ├── TFA2.py                      # BCI 4-Panel 時頻分析 (PSD、Time-domain、Energy) 與特徵自動檢驗
+│   ├── erd_topomap_analysis.py      # 全局 ERD 空間地形圖 (Topomap) 與 7 Run 學習演化軌跡
+│   └── eyes_movement_detect.py      # 眼動 EOG 作弊檢定與異常波形繪製 (Fp1, Fp2 異常檢出)
+│
+├── saliency_plot/                   # 【5. Saliency 空間圖與 PSD 綜合視覺化】
+│   ├── draw_saliency_topo_PSD.py    # 批次繪製單一受試者 Saliency Topomap 與 PSD 複合圖
+│   ├── draw_saliency_topo_PSD_all.py# 將全部受試者合併為 7x24 矩陣大圖
+│   └── draw_saliency_topo_PSD_pair.py# 繪製同受試者跨 Session 成對比較圖
+│
+├── hardware_analysis/               # 【6. 硬體效能與參數優化】
+│   ├── find_hardware_performance.py # 解析即時日誌中的推論延遲、TCP 延遲與 FPS
+│   ├── plot_hardware_performance.py # 繪製 4 款模型在各 Epoch 下的延遲變化
+│   ├── nasa_tlx_charts.py           # 繪製 NASA-TLX 認知負荷問卷分析圖表
+│   └── find_best_parameter.py       # 萃取 online_simulation 日誌找出最佳超參數組合
+│
+├── music_tools/                     # 【7. 歌曲地圖工具】
+│   ├── dat_process.py               # 根據間隔過濾刪除多餘 Note
+│   └── map3to2.py                   # 歌曲 Map v3 轉 v2 格式相容轉換工具
+│
+└── utils/                           # 【8. 通用共用工具庫】
+    └── common_utils.py              # 常數配置、Tee 日誌、帶通濾波、資料整理與共用統計檢定工具
+```
 
-* map3to2.py: 如果 map 太新或是版本不對，需要轉換，轉換過後沒有東西，代表目前版本正確。
-* dat_process.py: 根據間隔刪除多餘的 note。
+---
 
+### 如何跑完整個 Pipeline 
 
+本系統提供**一鍵主管線 (`pipeline.py`)**，整合了從原始腦波資料處理到產出論文級統計表與圖表的完整生命週期。
 
-> 在 `else/saliency ` 資料夾的部分，有以下文件
+#### 1. 一鍵全自動執行
+只要一個指令，自動依照順序執行「資料轉換 -> 4-Fold CV 訓練 -> 日誌解析與 CSV 建立 -> 統計檢定與出圖 -> 受試者分群篩選」：
 
-* 4_fold_CV_13.py、4_fold_CV_13_all.py、4_fold_CV_22.py、4_fold_CV_22_all.py: 
+```bash
+# 全流程執行
+python python/else/pipeline.py --step all --channels 13 --base_dir /mnt/project/MIEXP/DATA_Cygnus --csv_path metrics_summary.csv --plot_dir /path/to/your/file
+```
 
-  * 沒有 all 代表會 train 每個 run，並根據每個 run 最好的 model 產生 saliency map (`record.pkl`、`epochs.pkl`)，使用 XBrainLab 的套件建立的 map。
-  * 13, 22 分別代表不同 channel 設定
-  * 基本上以上程式碼差不多，改的地方只有 channel 設定和 subject list 是否要合併的部分
-* data_process_np.py、MI_train.py、Models.py: 跟上面的處裡方式相同，特別提出來是因為這個資料夾下，就使用到這些，我把他們提取出來
-* draw_saliency_topo_PSD.py: 根據剛剛的 (`record.pkl`、`epochs.pkl`) 來產生出多個 saliecy map
-* draw_saliency_topo_PSD_all.py: 產生所有 subject 的大圖，把上面生出的圖片合併
-* draw_saliency_topo_PSD_pair.py: 產生一個 subject 兩個 session 的圖片
-* sum_up_acc_with_log_and_output_list.py: generate_metric_plot.py
+#### 2. Fast Mode from CSV
+若已具有指標資料庫 `metrics_summary.csv`，可在 **1~2 秒內直接產出成果**：
 
+```bash
+# 產出 Table 1-3 統計檢定表與 4 大核心成果圖表至 charts
+python python/else/pipeline.py --step plot
 
+# 執行受試者多維度分群篩選報告
+python python/else/pipeline.py --step stratify
+```
 
-準確度相關:
-* `python 4_fold_CV_13.py`: 所有 subjuct 跑每 run 的準確度，會出來 log，可以透過 `sum_up_acc_with_log_and_output_list.py` 分析 log 檔案
-* `python 4_fold_CV_13_all.py`: 所有 subject 跑每個 session 的準確度，會出來 log，可以透過 `sum_up_acc_with_log_and_output_list.py` 分析 log 檔案
-* `python sum_up_acc_with_log_and_output_list.py`: 可以讀取上面的 log，以及實驗的 log，抓取準確度 (online and offline)，整理成可以直接用 python 拿的格式。![image](.\picture\log.png)
-* `python generate_metric_plot_each_run`: 繪製各 run 所有指標變化![image](.\picture\metric_each_run.png)
-* `python generate_metric_WSI.py`: 生成 Within-Session Improvement 的圖片 ![image](.\picture\metric_WSI.png)
+#### 3. 分階段逐步執行 (Step-by-Step Execution)
+若需要單獨除錯或調整特定階段參數，可透過 `--step` 參數分別調用：
 
+##### 1：資料前處理 (`create_np`)
+將原始 EEG CSV 與 Log 檔轉換為 MI 與 Resting 的 `.pt` 格式，預設開啟標籤平衡排序 (`--arrange_by_label`)：
+```bash
+python python/else/pipeline.py --step create_np --channels 13 --base_dir "/mnt/project/MIEXP/DATA_Cygnus"
+# 或直接調用子模組：
+python python/else/preprocessing/create_MInp.py --channels 13 --base_dir "/mnt/project/MIEXP/DATA_Cygnus"
+```
 
-腦波指標相關:
+##### 2：4-Fold Cross Validation 與 Saliency map 特徵產出 (`train`)
+自動依據受試者各 Run 訓練 SCCNet 模型，並透過 Saliency / NoiseTunnel 運算顯著性特徵權重：
+```bash
+python python/else/pipeline.py --step train --channels 13 --train_mode both --epochs 100
+# 或直接調用個別訓練 python：
+python python/else/training/4_fold_CV_13.py --epochs 100
+python python/else/training/4_fold_CV_13_all.py --epochs 100
+```
 
-* `python compute_saliency_metric.py`: 計算 MBSR 與 MSFI 的指標 (需要先跑過 `4_fold_CV_13.py` 類型的程式碼，取得 saliency map matrix 檔案)，可以填入到以下的文件內。
-* `sum_up_all_metric_with_log_and_output_list.py`: 與 `python sum_up_acc_with_log_and_output_list.py` 類似，不過多加入 `python compute_saliency_metric.py` 產生的 log 內容，會多產出指標
+##### 3：指標日誌解析、CSV 資料庫持久化與全套出圖 (`analyze`)
+自動抓取離線各 Run、全 Session 以及線上即時日誌，計算 Spectral Saliency 與 Spatial Saliency，匯出標準 `metrics_summary.csv` 並印出統計檢定與產出圖表：
+```bash
+python python/else/pipeline.py --step analyze --channels 13 --csv_path metrics_summary.csv
+# 或直接調用個別訓練 python (offline_runs_log 與 offline_sess_log 是根據上面 4_fold_CV_13, 4_fold_CV_13 出來的 log)：
+analyze_metrics_and_plot.py --channels 13 --offline_runs_log "training_log_20260416_13.txt" --offline_sess_log "training_log_20260416_13_all.txt" --base_dir "/mnt/project/MIEXP/DATA_Cygnus" --csv_path "metrics_summary.csv"
+```
+產出的核心圖表包含：
+1. **`effects_across_metrics_le_ae.png`**：Accuracy、Spectral Saliency、Spatial Saliency 的學習效應 (LE Diff) 與適應效應 (AE Diff) 動態長條圖，依據 t 檢定 (t-p) 標註顯著性星號。
 
-統計檢定:
-* `python generate_metric_ttest.py`: 生成各指標的統計檢定，可以選  t test, Wilcoxon t test
-* `python generate_metric_plot.py`: 生成對應 plot metric 統整 (需要根據前面整理的條件填入對應數值)
+   ![](picture/effects_across_metrics_le_ae.png)
 
-查看受試者狀態:
-* `python generate_metric_sum01.py`: 找出受試者全部指標 (Acc, MBSR, MSFI) 皆落在 前 30% 的 Sub、進步幅度前 3 名 (S2 - S1 的三指標差值總和)、高特徵但低表現 (潛在學習者)。
-* `python generate_metric_sum02.py`: 找出受試者排名，對於所有指標有個別表格。
+2. **`wsi_session_comparison.png`**：Within-Session Improvement 改善量柱狀圖，針對單一 Session 顯著性進行星號標註。
 
+   ![](picture/wsi_session_comparison.png)
 
+3. **`s1_s2_all_metrics_combined.png`**：Session 1 vs Session 2 各指標跨 7 個 Run 趨勢圖。
 
+   ![](picture/s1_s2_all_metrics_combined.png)
 
-Saliency map
-* `python draw_saliency_topo_PSD.py`: 把 saliency map 單張生成，這個最花時間。==這個要先執行== ![image](.\picture\Sub44_s1_c0_combined.png)
-* `python draw_saliency_topo_PSD_all.py`: 根據以經生好的圖片，生成全部 saliency map (draw_saliency_topo_PSD_all.py)![image](.\picture\22_AllSubjects_s1_Label0.png)
-* `python draw_saliency_topo_PSD_pair.py`: 根據以經生好的圖片，生成成對 (兩個 session 同個人的 saliency map)(draw_saliency_topo_PSD_all.py)
-![image](.\picture\Sub44_s1_c0_combined.png)
+4. **`static_adaptive_all_metrics_combined.png`**：Static vs Adaptive 條件跨 7 個 Run 趨勢圖。
 
+   ![](picture/static_adaptive_all_metrics_combined.png)
 
+##### 執行受試者多維度分群篩選報告  (`stratify`)
+依據多維度分位數門檻（預設前 30%、後 30% 與中位數），自動將受試者診斷分群：
+- **全面優異組**：Acc、Spectral Saliency、Spatial Saliency 全部位於前 30%（如 S8, S20, S24）。
+- **學習突破組**：跨 Session 進步幅度（S2 - S1 三指標總和）前 3 名（如 S24, S19, S15）。
+- **潛在學習組**：具備顯著高腦波特徵但分類準確率偏低（如 S13, S21）。
+- **替代控制組**：高分類準確率但具備非典型生理特徵（如 S2, S12）。
+```bash
+python python/else/pipeline.py --step stratify
+# 或自訂分位數門檻與匯出檔案：
+python python/else/analysis/subject_stratification.py --top_pct 30 --bottom_pct 30 --output_txt stratification_report.txt --output_csv stratification_summary.csv
+```
 
-> 在  `else/raw_data  ` 資料夾的部分，有以下文件
+---
 
-* nasa_tlx_chart.py: 這個紀錄問卷內容，運行會跑出對應圖表
-* TFA2.py: 分析 raw data，看有沒有 ERD，主要比較左右 Trial，channel 看所有 C 區內容
-* eye_move_detect.py: 分析 raw data，看有沒有眼動，並存 fp1 fp2 分析圖表
-* find_hardware_performance.py: 先設定 python config.py `verbose = True` 以後，使用這個程式碼，抓出模型 real time 運行效能
-* find_best_parameter.py: 透過這個程式碼，抓取 offline_simulation 出來的 log
+### 神經生理進階分析與特徵圖繪製
+
+* **BCI 4-Panel time-frequency analysis (`neuro_analysis/TFA2.py`)**：
+  比較左右手動作想像在 C 區通道 PSD、Time-domain 與 Power 差異：
+  
+  ```bash
+  python python/else/neuro_analysis/TFA2.py --base_dir <資料集目錄> --output_dir ./TFA_output --channels 22 --ids 35,37,70
+  ```
+* **ERD Topomap (`neuro_analysis/erd_topomap_analysis.py`)**：
+  繪製 ERD Tompmap，計算方式為使用 Run 的能量中位數當 baseline，然後分別計算 Mu 與 Beta 頻段：
+  
+  ```bash
+  python python/else/neuro_analysis/erd_topomap_analysis.py --data_dir <資料集目錄> --output_dir ./erd_output -all
+  ```
+* **眼動偽影作弊檢驗 (`neuro_analysis/eyes_movement_detect.py`)**：
+  批次檢驗 Fp1 / Fp2 是否有透過眼球轉動或眨眼的波形：
+  
+  ```bash
+  python python/else/neuro_analysis/eyes_movement_detect.py --base_dir <資料集目錄> --output_dir ./EOG_output -all
+  ```
+* **Saliency Topomap 與 PSD (`saliency_plot/draw_saliency_topo_PSD.py`)**：
+  繪製 Mu/Alpha (8-13Hz) 與 Beta (13-30Hz) 之 Saliency Topomap 及頻譜圖：
+  
+  ```bash
+  # 把 saliency map 單張生成，這個最花時間
+  python python/else/saliency_plot/draw_saliency_topo_PSD.py --channels 22 --base_dir <資料集目錄>
+  
+  # 其他根據上面生成的內容，生成對應的版面
+  python python/else/saliency_plot/draw_saliency_topo_PSD_all.py # 下圖
+  python python/else/saliency_plot/draw_saliency_topo_PSD_pair.py  # 下下圖
+  ```
+  ![](./picture/Sub44_s1_c0_combined.png)
+  ![](./picture/22_AllSubjects_s1_Label0.png)
 
 
 
 > 在 offline_simulation 資料夾下面
 
-* 跑 `online_simulation.py`，透過這個程式碼，模擬 online 的內容，測試最佳的參數設定 (online adaptive 更新多少次、需要多少 trial 更新、learning rate 設多少比較好、是否要 validation set、batch size 設多少比較好)，並記錄到 log 裡面，透過 `else/raw_data/find_best_parameter.py ` 得到最終結果
+* 跑 `online_simulation.py`，透過這個程式碼，模擬 online 的內容，測試最佳的參數設定 (online adaptive 更新多少次、需要多少 trial 更新、learning rate 設多少比較好、是否要 validation set、batch size 設多少比較好)，並記錄到 log 裡面，透過 `python/else/hardware_analysis/find_best_parameter.py` 得到最終結果
 * 裡面的程式碼，基本上很多與 main 一樣，不過為了不依賴 main 裡面的內容，所以再次寫一份到這個資料夾下面，提供  `online_simulation.py` 使用
 
 ## noVR
