@@ -52,7 +52,13 @@ class EEGReader():
         inlet = None
         latency_values = []
         if not self.is_simulated:
-            inlet = LSL.setup_lsl_inlet(config.RECEIVE_CYGNUS_LSL_STREAM)
+            try:
+                inlet = LSL.setup_lsl_inlet(config.RECEIVE_CYGNUS_LSL_STREAM, timeout=2.0)
+            except RuntimeError as e:
+                print(f"⚠️ [警告] 無法解析 LSL 腦波串流: {e}")
+                print("👉 自動切換為「模擬隨機腦波 (Simulated EEG)」模式運行，確保測試流程不中斷！")
+                print("💡 提示: 若欲手動指定模式，可在 python/config.json 將 is_simulated_eeg 設為 true。")
+                self.is_simulated = True
         while not self.read_eeg_stop_event.is_set():
             if self.is_simulated:
                 data = np.random.randint(-10001, 10001, size=(config.EEG_CHANNELS, 1)).reshape(-1)

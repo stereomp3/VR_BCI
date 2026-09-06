@@ -22,65 +22,6 @@ from main.Utils.TCPServer import TCPServer
 import time
 
 
-# class UnityLSLReader:
-#     def __init__(self):
-#         self.save_csv = config.SAVE_CSV
-#         self.filename = config.LOG_FILENAME
-#         self.is_simulated = config.is_simulated_unity
-#         self.csv_writer = None
-#         self.csv_file = None
-#         self.read_marker_stop_event = threading.Event()
-#         self.read_marker_thread = None
-#
-#     def start_read_marker_thread(self):
-#         if self.read_marker_thread and self.read_marker_thread.is_alive():
-#             print(f"{config.TAGS.WARNING.value} Marker thread is already running.")
-#             return  # 不要重啟
-#
-#         print(f"{config.TAGS.INFO.value} Start read lsl unity marker...")
-#         self.filename = rename_file_with_time(config.LOG_FILENAME)
-#         self.read_marker_stop_event.clear()  # 重置 stop_event，允許重新啟動
-#
-#         self.read_marker_thread = threading.Thread(target=self.read_unity_marker, daemon=True)
-#         self.read_marker_thread.start()
-#
-#     def end_read_marker_thread(self):
-#         print(f"{config.TAGS.INFO.value} End read lsl unity marker...")
-#         self.read_marker_stop_event.set()  # 設置停止事件
-#         if self.read_marker_thread and self.read_marker_thread.is_alive():
-#             self.read_marker_thread.join()
-#             self.read_marker_thread = None
-#
-#     def read_unity_marker(self):
-#         unity_inlet = LSL.setup_lsl_inlet(config.RECEIVE_UNITY_LSL_STREAM)
-#         if unity_inlet is None:
-#             print(f"{config.TAGS.ERROR.value}  Unity_inlet is not found!")
-#             return
-#         with open(self.filename, "w", newline="") as f:  # 初始化文件
-#             pass
-#
-#         while not self.read_marker_stop_event.is_set():
-#             data, ts = unity_inlet.pull_sample(timeout=0.0)
-#             if data is not None:
-#                 print(f"{config.TAGS.MARKER.value} {data[0]}")
-#                 for state in config.GameSTATE:  # 比對字串
-#                     if state.value == data[0]:
-#                         print(f"{config.TAGS.INFO.value} set unity_marker_string_stage")
-#                         global_value.unity_marker_string_stage = data[0]
-#                 # 比對 log 的格式，用 data_process_np.py 裡面的內容
-#                 # Trial 0 START: 1760276373.814 LABEL: 1
-#                 # Trial 0 CUT: 1760276374.228
-#                 # Trial 0 END: 1760276378.466 LABEL: 1
-#                 pat = re.compile(r'Trial\s+(\d+)\s+(START|CUT|END):\s*([\d\.]+)(?:\s+LABEL:\s*(\d+))?', re.IGNORECASE)
-#                 m = pat.match(data[0])
-#                 if m:
-#                     print(f"{config.TAGS.INFO.value} set unity_marker_string_log")
-#                     global_value.unity_marker_string_log = data[0]
-#                     # 會傳送的東西:
-#                     with open(self.filename, "a", encoding="utf-8") as f:
-#                         f.write(f"{data[0]}\n")
-
-
 class UnityTCPReader:
     def __init__(self):
         self.save_csv = config.SAVE_CSV

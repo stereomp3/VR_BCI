@@ -35,7 +35,8 @@ models_name = []  # 顯示在 unity 的模型 # 會讀取 config.EEG_CHECKPOINT_
 update_model = False  # 在 unity 傳輸字串後，會更新這個 (UnityMarkerReader.py)，然後在 game_state.py 使用，使用過後還原成 False (update model)
 unity_update_model_str = None  # 跟上面的那個為一組的，都從 unity 那邊接收，接收後，根據模型名稱替換模型
 # 訓練 (EEG_train FT train) 使用的位置，訓練完成後，會更新為訓練模型，在 lobby 選擇新模型也會 update
-NOW_TRAINED_CHECKPOINT = f"{config.EEG_CHECKPOINT_MAIN_BASE_FILE}c_000.pth"
+import os
+NOW_TRAINED_CHECKPOINT = os.path.join(config.EEG_CHECKPOINT_MAIN_BASE_FILE, "c_000.pth")
 
 # ---- Calibration Replay Buffer（跨多次 calibration 持久保存） ----
 # key 為類別 index (0, 1)，value 為 (x_tensor, y_tensor, weight) 的 list

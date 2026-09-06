@@ -5,44 +5,110 @@ public static class Config
     // json
     public static string level_json_file = "levelData.json";
     public static string song_json_file = "song.json";
-    public static string[] level_ui_strings = { "MI", "Easy", "Normal", "Hard", "Expert", "ExpertPlus" }; // ¹ïÀ³¤U­±ªº enum Level
-    public static string Calibration = "Calibration"; // ¬ö¿ı Calibration ¸ê®Æ§¨ªº¦WºÙ¡A·|¥Î©ó¥h Calibration ³õ´ºªº¦r¦ê¤ñ¹ï
+    public static string[] level_ui_strings = { "MI", "Easy", "Normal", "Hard", "Expert", "ExpertPlus" }; // å°æ‡‰ä¸‹é¢çš„ enum Level
+    public static string Calibration = "Calibration"; // ç´€éŒ„ Calibration è³‡æ–™å¤¾çš„åç¨±ï¼Œæœƒç”¨æ–¼å» Calibration å ´æ™¯çš„å­—ä¸²æ¯”å°
 
-    // TCP setting (¹L¥h¬° lsl ³]©w
+    // TCP setting (éå»ç‚º lsl è¨­å®š
     public static string receive_python_lsl_stream = "MarkerStream";
     public static string receive_python_train_lsl_stream = "Train_MarkerStream";
     public static string to_python_lsl_stream = "UnityMarkerStream";
-    public static string training_done = "training done";  // python ¶Ç°e¶}©l°V½m¦nªº¦r¦ê¤º®e¡A¥Î©ó TCP_Clients (old ReceiveLSLTrainMarker.cs) // ¦b TrainingLogUI.cs AddMarker function ¸Ì­±
-    public static string calibration_done = "calibration done";  // python ¶Ç°e¶}©l°V½m¦nªº¦r¦ê¤º®e¡A¥Î©ó TCP_Clients¡A·|³]©w GM ªº calibration_model_finish ÅÜ¼Æ¨ì true // ¦b Calibration2.cs ¸Ì­±¡A®Ú¾Ú is_calibration ¨M©w¤U¤@¨BÆJ
+    public static string training_done = "training done";  // python å‚³é€é–‹å§‹è¨“ç·´å¥½çš„å­—ä¸²å…§å®¹ï¼Œç”¨æ–¼ TCP_Clients (old ReceiveLSLTrainMarker.cs) // åœ¨ TrainingLogUI.cs AddMarker function è£¡é¢
+    public static string calibration_done = "calibration done";  // python å‚³é€é–‹å§‹è¨“ç·´å¥½çš„å­—ä¸²å…§å®¹ï¼Œç”¨æ–¼ TCP_Clientsï¼Œæœƒè¨­å®š GM çš„ calibration_model_finish è®Šæ•¸åˆ° true // åœ¨ Calibration2.cs è£¡é¢ï¼Œæ ¹æ“š is_calibration æ±ºå®šä¸‹ä¸€æ­¥é©Ÿ
     public static int TCP_PORT = 50007;
     public static string TCP_HOST = "127.0.0.1"; // 172.20.2.173
     public static int PredictionHistoryLength = 100;
-    // stage ¹ïÀ³ enum Stage ¶¶§Ç 
+    // stage å°æ‡‰ enum Stage é †åº 
     public static string[] Stage = { "Lobby" , "MI" };
 
-    // ¼Ò«¬¿ï¾Ü³]©w in TCP_Client.cs
-    public static string send_python_tcp_model_str = "send_python_tcp_model_str"; // ¦b lobby ´N·|°e¥X³o­Ó¦r¦ê ()¡AµM«á python ·|¦^¶Ç¤U­±¦r¦ê©M model ¦WºÙ
+    // æ¨¡å‹é¸æ“‡è¨­å®š in TCP_Client.cs
+    public static string send_python_tcp_model_str = "send_python_tcp_model_str"; // åœ¨ lobby å°±æœƒé€å‡ºé€™å€‹å­—ä¸² (TCP_Clients)ï¼Œç„¶å¾Œ python æœƒå›å‚³ä¸‹é¢å­—ä¸²å’Œ model åç¨±
     public static string receive_python_tcp_model_str = "SENT_UNITY_MODEL_STR"; // receive from python txt
-    public static string send_python_tcp_select_model_str = "send_python_tcp_select_model_str"; // ¦b SelectModelButtonUI.cs ¸Ì­±¡Afunction ©I¥s
-    public static string separate_str = "@@@"; // ¥Î©ó¤À¶}¦r¦êªº²Å¸¹¡Apython unity ³£¨Ï¥Î³o­Ó
+    public static string send_python_tcp_select_model_str = "send_python_tcp_select_model_str"; // åœ¨ SelectModelButtonUI.cs è£¡é¢ï¼Œfunction å‘¼å«
+    public static string separate_str = "@@@"; // ç”¨æ–¼åˆ†é–‹å­—ä¸²çš„ç¬¦è™Ÿï¼Œpython unity éƒ½ä½¿ç”¨é€™å€‹
+
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+    public static void LoadConfigFromJson()
+    {
+        try
+        {
+            string configPath = System.IO.Path.Combine(Application.streamingAssetsPath, "config.json");
+            if (System.IO.File.Exists(configPath))
+            {
+                string json = System.IO.File.ReadAllText(configPath);
+                var parsed = JsonUtility.FromJson<SharedConfigJson>(json);
+                if (parsed != null)
+                {
+                    if (parsed.tcp_network != null && parsed.tcp_network.port > 0)
+                    {
+                        TCP_PORT = parsed.tcp_network.port;
+                        if (!string.IsNullOrEmpty(parsed.tcp_network.host))
+                            TCP_HOST = parsed.tcp_network.host;
+                        if (!string.IsNullOrEmpty(parsed.tcp_network.separate_str))
+                            separate_str = parsed.tcp_network.separate_str;
+                    }
+                    if (parsed.game_settings != null)
+                    {
+                        if (parsed.game_settings.trial_train_interval > 0)
+                            trial_train_interval = parsed.game_settings.trial_train_interval;
+                        if (parsed.game_settings.group_note_num > 0)
+                            group_note_num = parsed.game_settings.group_note_num;
+                        if (parsed.game_settings.cube_space_time > 0)
+                            cube_space_time = parsed.game_settings.cube_space_time;
+                        adaptive_model = parsed.game_settings.adaptive_model;
+                    }
+                    Debug.Log($"[Config] Successfully loaded shared config from {configPath}. TCP={TCP_HOST}:{TCP_PORT}, trial_interval={trial_train_interval}");
+                }
+            }
+        }
+        catch (System.Exception ex)
+        {
+            Debug.LogWarning($"[Config] Could not parse config.json, using default values: {ex.Message}");
+        }
+    }
+}
+
+[System.Serializable]
+public class SharedConfigJson
+{
+    public int active_channels;
+    public TcpNetworkConfig tcp_network;
+    public GameSettingsConfig game_settings;
+}
+
+[System.Serializable]
+public class TcpNetworkConfig
+{
+    public string host;
+    public int port;
+    public string separate_str;
+}
+
+[System.Serializable]
+public class GameSettingsConfig
+{
+    public int trial_train_interval;
+    public int group_note_num;
+    public float cube_space_time;
+    public bool adaptive_model;
+}
 
     // audio
     public static float volume = 0.3f;
 
     // other
-    public static bool pass_tutorial = false; // pass_tutorial ¥D­n¸õ¹L±Ğ¾Ç¡AµM«á calibration «e­±ªº ME ¤]ÅÜ¦¨ MI¡Aºâ¬O§Ö³t¼Ò¦¡¡A¥Î©ó´ú¸Õ
-    public static int trial_train_interval = 4; // ¨C N ­Ó trial ´N§ó·s¤@¦¸¼Ò«¬¡ATimeLogger ¦b end ªº®É­Ô¡A³qª¾§ó·s¼Ò«¬¡CBeatmapSpawner.cs ªì©l¤Æ trial ªº®É­Ô¤]·|¥Î¨ì
-    // Calbration °V½m»P¶}©lÅã¥Ü¦r¦ê
-    public static string send_python_tcp_calibration_start = "send_python_tcp_calibration_start"; // ¦b Calibration2 ³õ´º·|®Ú¾Ú³o­Ó¦r¦ê¡A§â python ¨ºÃäªº file ¦s¦¨ pt ÀÉ®×
-    public static string receive_python_tcp_calibration_done = "SENT_UNITY_CALIBRATION_DONE_STR"; // °V½m§¹¦¨«á·|±µ¦¬ receive from python txt¡AµM«á¦A¦¸µo°e trial // ³o­Ó¥Ø«e¦n¹³¨S¥Î? 
+    public static bool pass_tutorial = false; // pass_tutorial ä¸»è¦è·³éæ•™å­¸ï¼Œç„¶å¾Œ calibration å‰é¢çš„ ME ä¹Ÿè®Šæˆ MIï¼Œç®—æ˜¯å¿«é€Ÿæ¨¡å¼ï¼Œç”¨æ–¼æ¸¬è©¦
+    public static int trial_train_interval = 4; // æ¯ N å€‹ trial å°±æ›´æ–°ä¸€æ¬¡æ¨¡å‹ï¼ŒTimeLogger åœ¨ end çš„æ™‚å€™ï¼Œé€šçŸ¥æ›´æ–°æ¨¡å‹ã€‚BeatmapSpawner.cs åˆå§‹åŒ– trial çš„æ™‚å€™ä¹Ÿæœƒç”¨åˆ°
+    // Calbration è¨“ç·´èˆ‡é–‹å§‹é¡¯ç¤ºå­—ä¸²
+    public static string send_python_tcp_calibration_start = "send_python_tcp_calibration_start"; // åœ¨ Calibration2 å ´æ™¯æœƒæ ¹æ“šé€™å€‹å­—ä¸²ï¼ŒæŠŠ python é‚£é‚Šçš„ file å­˜æˆ pt æª”æ¡ˆ
+    public static string receive_python_tcp_calibration_done = "SENT_UNITY_CALIBRATION_DONE_STR"; // è¨“ç·´å®Œæˆå¾Œæœƒæ¥æ”¶ receive from python txtï¼Œç„¶å¾Œå†æ¬¡ç™¼é€ trial // é€™å€‹ç›®å‰å¥½åƒæ²’ç”¨? 
 
-    // ¹CÀ¸³]©w
-    public static int group_note_num = 5; // ³]©w¤@²Õ group ¸Ì­±¦³´X­Ó note
-    public static float cube_space_time = 0.7f; // ¹ïÀ³¦a¹Ïªº²£¥X¶¡¹j // ¦b NoteLogTrigger.cs, BeatmapSpawner.cs ¸Ì­± ¥Î¨ì¡A­pºâ beatThreshold_up ©M down
-    public static bool adaptive_model = false; // ¦b TimeLogger.cs ¸Ì­±¥Î¨ì¡A·|®Ú¾Ú¹êÅç³]©w¡A¨M©w¬O§_­n¨C run update model // ¤§«e¼g¦b  BeatmapSpawner.cs
+    // éŠæˆ²è¨­å®š
+    public static int group_note_num = 5; // è¨­å®šä¸€çµ„ group è£¡é¢æœ‰å¹¾å€‹ note
+    public static float cube_space_time = 0.7f; // å°æ‡‰åœ°åœ–çš„ç”¢å‡ºé–“éš” // åœ¨ NoteLogTrigger.cs, BeatmapSpawner.cs è£¡é¢ ç”¨åˆ°ï¼Œè¨ˆç®— beatThreshold_up å’Œ down
+    public static bool adaptive_model = false; // åœ¨ TimeLogger.cs è£¡é¢ç”¨åˆ°ï¼Œæœƒæ ¹æ“šå¯¦é©—è¨­å®šï¼Œæ±ºå®šæ˜¯å¦è¦æ¯ run update model // ä¹‹å‰å¯«åœ¨  BeatmapSpawner.cs
 }
 
-public enum Stage // Config.Stage[(int)Stage.LOBBY] ¹ïÀ³ Stage ¦r¦ê
+public enum Stage // Config.Stage[(int)Stage.LOBBY] å°æ‡‰ Stage å­—ä¸²
 {
     LOBBY,
     MI,

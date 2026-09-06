@@ -1,104 +1,156 @@
 """
-不會變動的變數存放位置，global
+VR-BCI 系統全域設定模組 (System Configuration)
+支援自動讀取共用設定檔 config.json (Single Source of Truth)，
+並動態適配 8, 13, 22, 32 通道設定與模型參數。
 """
-from enum import Enum
+
 import os
+import sys
+import json
+from enum import Enum
 from braindecode.models import ShallowFBCSPNet, EEGNetv4, EEGConformer, ATCNet
 from main.EEG.models import SCCNet
 
-RECEIVE_CYGNUS_LSL_STREAM = "Cygnus-329018-RawEEG"
-# RECEIVE_UNITY_LSL_STREAM = "UnityMarkerStream"
-TO_UNITY_LSL_STREAM = "MarkerStream"
-# TO_UNITY_TRAIN_LSL_STREAM = "Train_MarkerStream"
-TCP_PORT = 50007
-TCP_HOST = "0.0.0.0"  # all
-SAMPLE_RATE = 500
-# 主要針對資料讀取的 channel，但是在 CygnusEEGReader.py read_eeg 裡面要對應 channel 做額外處裡
-# channel_index = [7, 8, 9, 12, 13, 14, 17, 18, 19, 22, 23, 24, 27, 28, 29] # 15
-# channel_index = [7, 8, 9, 12, 13, 14, 17, 18, 19, 22, 23, 24, 28]  # 13
-channel_index = list(range(32))  # 32
-N_CHANNELS = 32  # use n channel_index to train, prediction and read buffer data (CygnusEEGReader.py)
-EEG_CHANNELS = 32  # use 22 channel, (32 channel eeg cap
-N_Class = 2  # left 1, right 0
-WINDOW_SECONDS = 1.0
-BUFFER_SIZE = int(SAMPLE_RATE * WINDOW_SECONDS)
-PREDICTION_INTERVAL = 0.01  # seconds between predictions # 目前暫時沒用 # EEG_Prediction.py 裡面 # 實際會比這個慢，大概 1 s 70 個
-band_pass_low = 1
-band_pass_high = 40
+# --- 1. 路徑基礎配置 ---
+_current_dir = os.path.dirname(os.path.abspath(__file__))
+BASE_FILE = os.path.dirname(_current_dir)  # python/main
+PYTHON_DIR = os.path.dirname(BASE_FILE)    # python
+REPO_ROOT = os.path.dirname(PYTHON_DIR)    # VR_BCI repo root
 
-# ShallowFBCSPNet, EEGNetv4, EEGConformer, ATCNet, SCCNet
-USE_MODEL = SCCNet  # 使用的模型，在 EEG_Train.py、EEGPrediction.py 裡面會用到
-# LOAD_MODEL_PARAM = dict(n_chans=len(channel_index), n_outputs=N_Class, n_times=SAMPLE_RATE, )  # braindecode
-LOAD_MODEL_PARAM = dict(samples=SAMPLE_RATE, channels=len(channel_index), n_classes=N_Class, sfreq=500, ) # SCCNet
+# --- 2. 搜尋並載入 config.json (Single Source of Truth) ---
+CONFIG_CANDIDATES = [
+    os.path.join(PYTHON_DIR, "config.json"),
+    os.path.join(REPO_ROOT, "unity", "Assets", "StreamingAssets", "config.json"),
+    os.path.join(REPO_ROOT, "unity_noVR", "Assets", "StreamingAssets", "config.json"),
+    os.path.join(os.getcwd(), "config.json"),
+]
+
+JSON_CONFIG = {}
+CONFIG_FILE_LOADED = None
+for candidate in CONFIG_CANDIDATES:
+    if os.path.exists(candidate):
+        try:
+            with open(candidate, "r", encoding="utf-8") as f:
+                JSON_CONFIG = json.load(f)
+                CONFIG_FILE_LOADED = candidate
+                break
+        except Exception as e:
+            print(f"[WARNING] 讀取設定檔 {candidate} 失敗: {e}")
+
+# --- 3. 通道定義設定 (8, 13, 22, 32 通道) ---
+DEFAULT_CHANNEL_DEFINITIONS = {
+    "8": list(range(2, 10)),  # [2, 3, 4, 5, 6, 7, 8, 9]
+    "13": [7, 8, 9, 12, 13, 14, 17, 18, 19, 22, 23, 24, 28],
+    "22": [2, 3, 4, 5, 7, 8, 9, 12, 13, 14, 17, 18, 19, 22, 23, 24, 27, 28, 29, 31, 32, 33],
+    "32": list(range(2, 34))  # 2~33
+}
+
+CHANNEL_DEFINITIONS = JSON_CONFIG.get("channel_definitions", DEFAULT_CHANNEL_DEFINITIONS)
+ACTIVE_CHANNEL_MODE = str(JSON_CONFIG.get("active_channels", "32"))
+
+if ACTIVE_CHANNEL_MODE not in CHANNEL_DEFINITIONS:
+    print(f"[WARNING] 未知 active_channels '{ACTIVE_CHANNEL_MODE}', 自動切換為預設 32 通道")
+    ACTIVE_CHANNEL_MODE = "32"
+
+channel_index = CHANNEL_DEFINITIONS[ACTIVE_CHANNEL_MODE]
+N_CHANNELS = len(channel_index)
+EEG_CHANNELS = len(channel_index)
+
+# --- 4. 網路與 LSL 設定 ---
+tcp_net = JSON_CONFIG.get("tcp_network", {})
+TCP_PORT = int(tcp_net.get("port", 50007))
+TCP_HOST = str(tcp_net.get("python_bind_host", "0.0.0.0"))
+SEPARATE_STR = str(tcp_net.get("separate_str", "@@@"))
+
+lsl_cfg = JSON_CONFIG.get("lsl_settings", {})
+RECEIVE_CYGNUS_LSL_STREAM = str(lsl_cfg.get("receive_cygnus_lsl_stream", "Cygnus-329018-RawEEG"))
+TO_UNITY_LSL_STREAM = str(lsl_cfg.get("to_unity_lsl_stream", "MarkerStream"))
+
+# --- 5. 訊號與腦波前處理參數 ---
+eeg_cfg = JSON_CONFIG.get("eeg_settings", {})
+SAMPLE_RATE = int(eeg_cfg.get("sample_rate", 500))
+WINDOW_SECONDS = float(eeg_cfg.get("window_seconds", 1.0))
+BUFFER_SIZE = int(SAMPLE_RATE * WINDOW_SECONDS)
+PREDICTION_INTERVAL = 0.01
+
+band_pass_low = float(eeg_cfg.get("band_pass_low", 1.0))
+band_pass_high = float(eeg_cfg.get("band_pass_high", 40.0))
+is_simulated_eeg = bool(eeg_cfg.get("is_simulated_eeg", False))
+is_simulated_unity = bool(eeg_cfg.get("is_simulated_unity", False))
+SAVE_CSV = bool(eeg_cfg.get("save_csv", True))
+REPLAY_BUFFER_LIMIT = int(eeg_cfg.get("replay_buffer_limit", 320))
+
+# --- 6. 模型架構與參數 ---
+N_Class = 2  # left 1, right 0
+USE_MODEL = SCCNet
+LOAD_MODEL_PARAM = dict(samples=SAMPLE_RATE, channels=N_CHANNELS, n_classes=N_Class, sfreq=SAMPLE_RATE)
 verbose = False
 
-is_simulated_unity = False  # use in EEG_Calibration, UnityMarkerReader # 改成 TCP 後用到較少 # 目前不要動
-is_simulated_eeg = True  # use in CygnusEEGReader True, 真正測試要改成 False
+# --- 7. 遊戲設定 ---
+game_cfg = JSON_CONFIG.get("game_settings", {})
+group_note_num = int(game_cfg.get("group_note_num", 5))
+cube_space_time = float(game_cfg.get("cube_space_time", 0.7))
+trial_train_interval = int(game_cfg.get("trial_train_interval", 4))
+adaptive_model = bool(game_cfg.get("adaptive_model", False))
 
-SAVE_CSV = True
-# --- 路徑設定開始 (使用 os 自動偵測) ---
-_current_dir = os.path.dirname(os.path.abspath(__file__))
-BASE_FILE = os.path.dirname(_current_dir)  # 取得上一層 main 資料夾
+# --- 8. 線上自適應訓練參數 ---
+adapt_cfg = JSON_CONFIG.get("online_adaptation", {})
+adaption_batch_size = int(adapt_cfg.get("batch_size", 8))
+adaption_learning_rate = float(adapt_cfg.get("learning_rate", 1e-3))
+adaption_epochs = int(adapt_cfg.get("epochs", 4))
+adaption_use_val = bool(adapt_cfg.get("use_val", True))
 
+# --- 9. 檔案目錄設定 (跨平台標準寫法) ---
 __REALTIME_BASE_FILE = os.path.join(BASE_FILE, "real_time_data")
 CSV_FILENAME = os.path.join(__REALTIME_BASE_FILE, "eeg_record.csv")
 LOG_FILENAME = os.path.join(__REALTIME_BASE_FILE, "log.txt")
 PT_DATA_FILENAME = os.path.join(__REALTIME_BASE_FILE, "data.pt")
 
+EEG_CHECKPOINT_MAIN_BASE_FILE = os.path.join(BASE_FILE, "EEG", "checkpoint_main") + os.sep
+EEG_CHECKPOINT_TMP_BASE_FILE = os.path.join(BASE_FILE, "EEG", "checkpoints") + os.sep
 
-# ---- Run 子資料夾相關函式 ----
+os.makedirs(EEG_CHECKPOINT_MAIN_BASE_FILE, exist_ok=True)
+os.makedirs(EEG_CHECKPOINT_TMP_BASE_FILE, exist_ok=True)
+os.makedirs(__REALTIME_BASE_FILE, exist_ok=True)
+
+MAIN_CHECKPOINT = os.path.join(EEG_CHECKPOINT_MAIN_BASE_FILE, "model.pth")
+TRAINED_CHECKPOINT = os.path.join(EEG_CHECKPOINT_MAIN_BASE_FILE, "model_trained.pth")
+
+TRAINING_FINISH_STR = "training done"
+SENT_UNITY_MODEL_STR = "SENT_UNITY_MODEL_STR"
+RECEIVE_UNITY_MODEL_STR = "send_python_tcp_model_str"
+RECEIVE_UNITY_SELECT_MODEL_STR = "send_python_tcp_select_model_str"
+
+RECEIVE_UNITY_CALIBRATION_START_STR = "send_python_tcp_calibration_start"
+SENT_UNITY_CALIBRATION_DONE_STR = "SENT_UNITY_CALIBRATION_DONE_STR"
+CALIBRATION_FINISH_STR = "calibration done"
 
 
 def getRunDataDir():
-    """根據目前 global_value.runCount 回傳對應的 run 資料夾路徑，並自動建立資料夾"""
-    import main.Utils.global_value as global_value
-    runDir = os.path.join(__REALTIME_BASE_FILE, f"run{global_value.runCount}")
+    """依據當前 global_value.runCount 回傳對應 run 資料夾路徑"""
+    try:
+        import main.Utils.global_value as global_value
+        run_count = global_value.runCount
+    except Exception:
+        run_count = 0
+    runDir = os.path.join(__REALTIME_BASE_FILE, f"run{run_count}")
     os.makedirs(runDir, exist_ok=True)
-    print(f"[DEBUG] getRunDataDir: {runDir}")
-    return runDir + os.sep
+    return runDir
 
 
 def getRunCsvFilename():
-    """回傳目前 run 資料夾下的 CSV 檔案路徑"""
-    return f"{getRunDataDir()}eeg_record.csv"
+    return os.path.join(getRunDataDir(), "eeg_record.csv")
 
 
 def getRunLogFilename():
-    """回傳目前 run 資料夾下的 LOG (TXT) 檔案路徑"""
-    return f"{getRunDataDir()}log.txt"
+    return os.path.join(getRunDataDir(), "log.txt")
 
 
 def getRunPtFilename():
-    """回傳目前 run 資料夾下的 PT 檔案路徑"""
-    return f"{getRunDataDir()}data.pt"
+    return os.path.join(getRunDataDir(), "data.pt")
 
 
-EEG_CHECKPOINT_MAIN_BASE_FILE = os.path.join(BASE_FILE, "EEG", "checkpoint_main\\")
-EEG_CHECKPOINT_TMP_BASE_FILE = os.path.join(BASE_FILE, "EEG", "checkpoints\\")
-
-MAIN_CHECKPOINT = os.path.join(EEG_CHECKPOINT_MAIN_BASE_FILE, "model.pth")  # 用於 calibration 的模型 # 用在 EEG_Train.py
-TRAINED_CHECKPOINT = os.path.join(EEG_CHECKPOINT_MAIN_BASE_FILE, "model_trained.pth")  # 訓練過後的模型 # 改到 global # 這個目前沒有使用了
-
-TRAINING_FINISH_STR = "training done"  # 用於 MI_train.py
-SENT_UNITY_MODEL_STR = "SENT_UNITY_MODEL_STR"  # 用於 UnityMarkerReader.py，get model list
-RECEIVE_UNITY_MODEL_STR = "send_python_tcp_model_str"  # 用於 UnityMarkerReader.py，get model list
-RECEIVE_UNITY_SELECT_MODEL_STR = "send_python_tcp_select_model_str"  # 用於 UnityMarkerReader.py，接收切換模型
-SEPARATE_STR = "@@@"  # 用於分開字串的符號，python unity 都使用這個
-
-# 用於 Calibration
-RECEIVE_UNITY_CALIBRATION_START_STR = "send_python_tcp_calibration_start"
-SENT_UNITY_CALIBRATION_DONE_STR = "SENT_UNITY_CALIBRATION_DONE_STR"
-group_note_num = 5  # 一個 group 幾個 note，和 unity 那邊一樣
-CALIBRATION_FINISH_STR = "calibration done"  # 用於 EEG_Train.py，MI_train.py 訓練完成後回到 EEG_Train 並觸發
-REPLAY_BUFFER_LIMIT = 320  # 單一類別最大容量，20 trial × 16 windows = 320，兩類共 40 trial
-
-# online adaption parameter
-adaption_batch_size = 8
-adaption_learning_rate = 1e-3
-adaption_epochs = 4
-adaption_use_val = True
-
-
+# --- 10. 列舉型別 ---
 class GameSTATE(Enum):
     Calibration = "Calibration"
     BeatSaber = "BeatSaber"

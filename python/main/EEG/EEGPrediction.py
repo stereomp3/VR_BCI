@@ -1,9 +1,19 @@
+import os
+import sys
 import time
 import torch.nn as nn
 import numpy as np
 import torch
 import threading
 from torch.utils.data import TensorDataset
+
+if hasattr(sys.stdout, 'reconfigure'):
+    try:
+        sys.stdout.reconfigure(encoding='utf-8', errors='replace')
+        sys.stderr.reconfigure(encoding='utf-8', errors='replace')
+    except Exception:
+        pass
+
 import main.Utils.config as config
 import main.Utils.preprocess as preprocess
 import main.Utils.global_value as global_value
@@ -14,7 +24,7 @@ class EEGPredictor:  # 調整模型需要改 self.model，和 self.load_fun 方�
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         # self.load_check_point_path = config.TRAINED_CHECKPOINT
         self.load_check_point_path = global_value.NOW_TRAINED_CHECKPOINT
-        self.model = config.USE_MODEL
+        self.model_class = config.USE_MODEL
         self.model_arg = config.LOAD_MODEL_PARAM
         self.model = self.init_model()
         self.predict_eeg_stop_event = threading.Event()
@@ -38,16 +48,31 @@ class EEGPredictor:  # 調整模型需要改 self.model，和 self.load_fun 方�
 
     def end_predict_eeg_thread(self):
         print(f"{config.TAGS.INFO.value} End predict loop...")
-        self.predict_eeg_stop_event.set()  # 設置停止事件
+        self.predict_eeg_stop_event.set()  # 設定終止事件
         if self.predict_eeg_thread and self.predict_eeg_thread.is_alive():
             self.predict_eeg_thread.join()
             self.predict_eeg_thread = None
 
     def init_model(self):
         # ======== Model Setup ============
-        model = self.model(**self.model_arg).to(self.device)  # n channel, sample, n class
-        checkpoint = torch.load(self.load_check_point_path, map_location=self.device)
-        model.load_state_dict(checkpoint['model_state_dict'])
+        model = self.model_class(**self.model_arg).to(self.device)  # n channel, sample, n class
+        try:
+            if not os.path.exists(self.load_check_point_path):
+                raise FileNotFoundError(f"Checkpoint 不存在: {self.load_check_point_path}")
+            checkpoint = torch.load(self.load_check_point_path, map_location=self.device)
+            model.load_state_dict(checkpoint['model_state_dict'])
+        except Exception as e:
+            print(f"⚠️ [WARNING] 載入模型權重失敗 ({e})。偵測到通道數或維度不匹配。")
+            print(f"👉 自動依據目前設定 ({config.N_CHANNELS} 通道) 為 {self.model_class.__name__} 生成匹配之隨機初始權重...")
+            from main.EEG.generate_random_models import create_matching_random_checkpoint
+            checkpoint = create_matching_random_checkpoint(
+                target_path=self.load_check_point_path,
+                model_class=self.model_class,
+                n_chans=config.N_CHANNELS,
+                n_outputs=config.N_Class,
+                n_times=config.SAMPLE_RATE
+            )
+            model.load_state_dict(checkpoint['model_state_dict'])
         model.eval()
         return model
 
@@ -59,7 +84,7 @@ class EEGPredictor:  # 調整模型需要改 self.model，和 self.load_fun 方�
         if self.is_updating:  # 防止一直進來，出現 crash 的問題
             return
         self.is_updating = True
-        self.model = config.USE_MODEL
+        self.model_class = config.USE_MODEL
         self.model = self.init_model()
         self.is_updating = False
 

@@ -38,11 +38,33 @@ torch install，==注意 torch 需要根據自己的需求下載==，每個人�
 pip install --force-reinstall torch==2.3.0 torchvision==0.18.0 torchaudio==2.3.0 xformers==0.0.26.post1 --index-url https://download.pytorch.org/whl/cu121
 ```
 
-下載完成後需要測試可不可以用 GPU
+下載完成後，可直接執行專屬環境檢測腳本，一鍵檢查 GPU 加速、CUDA 及所有核心依賴套件（MNE, Captum, Braindecode, PyLSL, XBrainLab 等）：
 
-```python
-import torch
-torch.cuda.is_available()
+```bash
+python python/check_env.py
+```
+
+## 設定檔單一來源 (Single Source of Truth)
+
+專案已整合統一設定檔 `python/config.json`（與 `unity/Assets/StreamingAssets/config.json` 同步）：
+- **通道設定切換**：直接修改 `active_channels` 為 `8`, `13`, `22` 或 `32`，Python 端與 Unity 端將同步切換對應的通道 index 與網路參數。
+- **TCP 與遊戲設定**：集中設定 TCP Port (預設 `50007`)、IP、`trial_train_interval`、`group_note_num` 等。
+- **模擬模式切換**：無實體腦波帽時，可將 `"is_simulated_eeg"` 設為 `true`。
+
+```json
+{
+  "active_channels": 32,
+  "channel_definitions": {
+    "8": [2, 3, 4, 5, 6, 7, 8, 9],
+    "13": [7, 8, 9, 12, 13, 14, 17, 18, 19, 22, 23, 24, 28],
+    "22": [2, 3, 4, 5, 7, 8, 9, 12, 13, 14, 17, 18, 19, 22, 23, 24, 27, 28, 29, 31, 32, 33],
+    "32": [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33]
+  },
+  "tcp_network": {
+    "host": "127.0.0.1",
+    "port": 50007
+  }
+}
 ```
 
 
@@ -130,36 +152,74 @@ torch.cuda.is_available()
 
 ## Python
 
-==再次提醒: Config.py 裡面 is_simulated_eeg，目前為 false，如果要使用腦波帽，請調成 true==
+==提示: 可直接於 `python/config.json` 統一修改 `is_simulated_eeg`（預設 `false`，無腦波帽時可設為 `true`），若連線失敗系統亦會自動啟動友善模擬回退保護。==
 
-執行程式碼，會根據 unity 那邊選取歌曲，把使用者資料存入到 real_time_data 下面，會根據 run 儲存 csv (data) 與 txt (label)，儲存的 pt 為 calibration 加入到 buffer 裡面的 data。
+執行程式碼，會根據 unity 那邊選取歌曲，把使用者資料存入到 `real_time_data` 下面，會根據 run 儲存 csv (data) 與 txt (label)，儲存的 pt 為 calibration 加入到 buffer 裡面的 data。
 
-程式碼執行的時候，在訓練完成模型會拿取 loss 最低的，然後放入到 `EEG\checkpoint_main` 下面，存成 `c_xxx` 的形式。
+程式碼執行的時候，在訓練完成模型會拿取 loss 最低的，然後放入到 `EEG/checkpoint_main` 下面，存成 `c_xxx` 的形式。
 
-> 主要在 `main` 資料夾的部分，有以下文件 (主要運行程式碼)
+### 1. 快速測試工具集 (`python/tools/`)
 
-新增 `online_test_lsl_to_unity.py`、`quick_trainer.py` 用於快速訓練以及測試
+專案提供兩個獨立快速測試工具，供開發者快速驗證訊號串流或個別模型：
 
-* EEG
-* real_time_data
-  * checkpoint_main: 放主要使用模型的資料夾 (會出現在模型選擇裡面)
-  * checkpoints: 放訓練模型的資料夾 (100 epoch 會有 100 個模型)
-  * CygnusEEGReader.py: cygnus 資料處裡
-  * data_process_np.py: 讀取 log 轉成 np
-  * EEG_Train.py: np 轉 tensor，並重新 label，然後設定要的參數然後準備訓練
-  * EEGPrediction.py: EEG 預測，根據 eeg buffer 餵給模型，然後給出 prediction，然後傳送到 unity
-  * MI_train.py: 主要訓練程式碼
-* Utils
-  * **config.py**: 紀錄不會動的變量，和 Unity Config.cs 有對應
-  * **global_value.py**: 紀錄會動的 global 變量，像是現在有的模型名稱，現在模型存檔有幾個，eeg buffer，現在使用的模型名稱 ...
-  * LSL.py: 用於與腦波帽傳輸
-  * preprocess.py: 資料前處裡 bandpass filter ...
-  * some_functions.py: 一些雜 function，目前有兩個，一個為資料字串加上時間 (re string)，另一個為看目前資料夾下面有沒有一樣的文件，如果有就重新命名
-  * TCPServer.py: 建立 TCP Server，並可以 broadcast 給 client
-  * **UnityMarkerReader.py**: 接收 unity 傳來的東西，並回應，或是做對應處裡
-  * file_pointer_reader.py: 紀錄文件讀取點，在 calibration 不需要重新讀取 CSV，加速運算處裡
-* game_state.py: state machine，用於各個 state 的切換
-* **main_start.py**: 程式碼開始點 (目前移動到外面才吃的到 main module)
+- **線上即時 LSL 串流與 Unity 快速測試** (`python/tools/online_test_lsl_to_unity.py`)：
+  可在不啟動完整遊戲狀態機的情況下，單獨驗證腦波帽訊號讀取、濾波、模型推論至發送 LSL Marker 給 Unity：
+  ```bash
+  # 模擬訊號模式 (無實體腦波帽時)
+  python python/tools/online_test_lsl_to_unity.py --simulated --channels 22 --model SCCNet
+
+  # 連接實體 Cygnus 腦波帽模式
+  python python/tools/online_test_lsl_to_unity.py --channels 32
+  ```
+
+- **單檔快速模型訓練與驗證** (`python/tools/quick_trainer.py`)：
+  快速測試特定受試者的 `.pt` 檔案，或使用合成 Demo 資料快速驗證模型訓練收斂性：
+  ```bash
+  # 使用 Demo 平衡資料快速驗證訓練流程
+  python python/tools/quick_trainer.py --demo --channels 22 --model SCCNet --epochs 20
+
+  # 指定具體 .pt 資料檔案訓練
+  python python/tools/quick_trainer.py --pt_files path/to/run1/data.pt path/to/run2/data.pt --channels 13 --epochs 50
+  ```
+
+### 2. 隨機模型初始化與通道不匹配 (Size Mismatch) 自動修復
+
+當在 `config.json` 切換通道數（例如從 32 改為 13 或 22 通道）時，預設權重可能會產生維度衝突。本專案具備**雙重保護機制**：
+- **自動修復機制**：即時預測 (`EEGPrediction.py`) 與線上微調 (`MI_train.py`) 在載入 Checkpoint 時若偵測到維度不匹配，系統會**自動捕捉異常並即時生成符合當前通道數的隨機初始權重覆蓋儲存**，保證遊戲不中斷閃退。
+- **手動隨機模型產生工具** (`python/main/EEG/generate_random_models.py`)：
+  可隨時手動為所有架構（`SCCNet`, `ShallowFBCSPNet`, `EEGNetv4`, `EEGConformer`, `ATCNet`）產生隨機權重：
+  ```bash
+  # 為指定通道 (如 22 通道) 產生隨機模型
+  python python/main/EEG/generate_random_models.py --channels 22
+
+  # 一鍵為 8, 13, 22, 32 全數產生隨機模型
+  python python/main/EEG/generate_random_models.py --all_channels
+  ```
+
+---
+
+### 3. 主系統模組說明 (`python/main`)
+
+* `main_start.py`: 系統啟動主入口 (啟動 TCP 伺服器與遊戲狀態機)
+* `game_state.py`: 遊戲狀態機 (管理 Lobby, Calibration, MI, BeatSaber, Training 狀態切換)
+* `EEG/`
+  * `checkpoint_main/`: 放主要模型資料夾 (出現在 Lobby 模型選擇清單中，包含 `c_000.pth`, `model.pth`)
+  * `checkpoints/`: 訓練暫存模型資料夾 (儲存各 Epoch 模型權重)
+  * `CygnusEEGReader.py`: Cygnus 腦波資料讀取與 buffer 管理 (具備友善離線自動回退模擬)
+  * `EEGPrediction.py`: 即時腦波特徵推論與 Unity Marker 發送 (具備維度 mismatch 自動隨機權重修復)
+  * `EEG_Train.py`: 線上自適應訓練排程、Replay Buffer 管理與 FT Pipeline
+  * `MI_train.py`: 線上模型微調與訓練器核心
+  * `data_process_np.py`: 讀取 CSV / Log 並提取為 Numpy 腦波 Epoch
+  * `models.py`: 定義 SCCNet 等客製模型架構
+  * `generate_random_models.py`: 隨機模型初始化與維度修復工具
+* `Utils/`
+  * `config.py`: 集中讀取 `config.json`，管理所有網路、通道與演算法常數
+  * `global_value.py`: 跨執行緒動態共用狀態 (目前模型名稱、執行緒 Lock、Replay Buffer 等)
+  * `TCPServer.py`: 高可靠性 TCP 伺服器，負責與 Unity 雙向傳遞狀態與控制字串
+  * `UnityMarkerReader.py`: 解析 Unity 傳送之事件 Marker 與狀態切換
+  * `file_pointer_reader.py`: 指標式增量 CSV/Log 讀取器 (避免 Calibration 重複讀取檔案，大幅加速)
+  * `preprocess.py`: 帶通濾波、去均值與特徵前處理
+  * `some_functions.py`: 檔案命名與版本號自動遞增工具
 
 
 

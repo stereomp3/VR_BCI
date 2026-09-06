@@ -1,0 +1,47 @@
+{
+  "_comment": "VR-BCI 系統共用統一設定檔 (Single Source of Truth) - Python 與 Unity 同步讀取",
+  "active_channels": 32,
+  "channel_definitions": {
+    "8": [2, 3, 4, 5, 6, 7, 8, 9],
+    "13": [7, 8, 9, 12, 13, 14, 17, 18, 19, 22, 23, 24, 28],
+    "22": [2, 3, 4, 5, 7, 8, 9, 12, 13, 14, 17, 18, 19, 22, 23, 24, 27, 28, 29, 31, 32, 33],
+    "32": [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33]
+  },
+  "lsl_settings": {
+    "receive_cygnus_lsl_stream": "Cygnus-329018-RawEEG",
+    "to_unity_lsl_stream": "MarkerStream"
+  },
+  "tcp_network": {
+    "host": "127.0.0.1",
+    "python_bind_host": "0.0.0.0",
+    "port": 50007,
+    "separate_str": "@@@"
+  },
+  "eeg_settings": {
+    "sample_rate": 500,
+    "window_seconds": 1.0,
+    "band_pass_low": 1.0,
+    "band_pass_high": 40.0,
+    "is_simulated_eeg": false,
+    "is_simulated_unity": false,
+    "save_csv": true,
+    "replay_buffer_limit": 320
+  },
+  "model_settings": {
+    "default_model": "SCCNet",
+    "n_classes": 2,
+    "auto_regenerate_mismatch": true
+  },
+  "game_settings": {
+    "trial_train_interval": 4,
+    "group_note_num": 5,
+    "cube_space_time": 0.7,
+    "adaptive_model": false
+  },
+  "online_adaptation": {
+    "batch_size": 8,
+    "learning_rate": 0.001,
+    "epochs": 4,
+    "use_val": true
+  }
+}
