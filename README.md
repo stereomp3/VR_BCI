@@ -4,11 +4,13 @@
 
 ![](./picture/SystemOverviewAdaptive.png)
 
-啟動步驟: Python 執行 `python/main/main_start.py`，unity 再執行程式碼。
+**啟動步驟: Python 執行 `python/main_start.py`，unity 再執行程式碼**。
 
 現在有新增 v1.0 release 的版本，不需要 VR heatset，直接下載就連接腦波帽就可以測試。
 
 ==python 測試 config 需要把 `is_simulated_eeg` 調成 `False`==
+
+
 
 # 環境安裝
 
@@ -167,7 +169,7 @@ python python/check_env.py
   ```bash
   # 模擬訊號模式 (無實體腦波帽時)
   python python/tools/online_test_lsl_to_unity.py --simulated --channels 22 --model SCCNet
-
+  
   # 連接實體 Cygnus 腦波帽模式
   python python/tools/online_test_lsl_to_unity.py --channels 32
   ```
@@ -177,7 +179,7 @@ python python/check_env.py
   ```bash
   # 使用 Demo 平衡資料快速驗證訓練流程
   python python/tools/quick_trainer.py --demo --channels 22 --model SCCNet --epochs 20
-
+  
   # 指定具體 .pt 資料檔案訓練
   python python/tools/quick_trainer.py --pt_files path/to/run1/data.pt path/to/run2/data.pt --channels 13 --epochs 50
   ```
@@ -191,7 +193,7 @@ python python/check_env.py
   ```bash
   # 為指定通道 (如 22 通道) 產生隨機模型
   python python/main/EEG/generate_random_models.py --channels 22
-
+  
   # 一鍵為 8, 13, 22, 32 全數產生隨機模型
   python python/main/EEG/generate_random_models.py --all_channels
   ```
