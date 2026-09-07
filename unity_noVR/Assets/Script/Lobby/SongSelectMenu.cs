@@ -26,6 +26,7 @@ public class SongSelectMenu : MonoBehaviour
     public TextMeshProUGUI sub_title;
     public TextMeshProUGUI song_time;
     public TextMeshProUGUI cube_num;
+    public TextMeshProUGUI condition_text;
     [Header("use in Song UI shower")]
     public GameObject fill_obj;  // 為了移動 fill 的位置，讓使用者可以看到目前選擇的難度
     private Vector3 fill_obj_pos;  // 為了移動 fill 的位置，讓使用者可以看到目前選擇的難度
@@ -55,6 +56,7 @@ public class SongSelectMenu : MonoBehaviour
         startButton.onClick.AddListener(StartGame);
         save_game_level();
         sender = TCP_Client.instance;
+        get_condition(condition_text);
     }
 
     // 當按鈕被點擊時觸發，並將 Button 傳遞給方法 // 主要為 中間選擇 level 的 button 使用
@@ -83,6 +85,20 @@ public class SongSelectMenu : MonoBehaviour
     public void reset_fill_position()
     {
         fill_obj.GetComponent<RectTransform>().localPosition = fill_obj_pos;
+    }
+
+    public void change_condition(TextMeshProUGUI textMeshProUGUI)
+    {
+        Config.adaptive_model = !Config.adaptive_model;
+        get_condition(textMeshProUGUI);
+    }
+
+    public void get_condition(TextMeshProUGUI textMeshProUGUI)
+    {
+        if (Config.adaptive_model)
+            textMeshProUGUI.text = "Adaptive";
+        else
+            textMeshProUGUI.text = "Static";
     }
 
     public void StartGame()
