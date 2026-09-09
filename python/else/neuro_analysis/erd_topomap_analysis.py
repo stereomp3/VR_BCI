@@ -11,7 +11,7 @@ BCI 全局 ERD Topomap 空間地形圖與學習軌跡分析系統 (Session Media
    - 計算標準去同步化百分比：ERD% = (P_task - P_base) / P_base * 100%。
 
 2. 三大類專業論文級 Topomap 獨立輸出 (儲存於 <output_dir>/<id>/)：
-   - `1_ERD_Topomap_Left_vs_Right_<ID>_<SESS>.png`  : 左右手 (Left/Right MI) x 頻段 (Mu 8-12Hz / Beta 13-30Hz) 空間對比
+   - `1_ERD_Topomap_Left_vs_Right_<ID>_<SESS>.png`  : 左右手 (Left/Right MI) x 頻段 (Mu 8-13Hz / Beta 13-30Hz) 空間對比
    - `2_ERD_Topomap_Run_Evolution_<ID>_<SESS>.png`   : Run 演化學習進程 (支援 6 Run: Run 1, 2, 4, 5, 6, 7，全電極文字標籤)
    - `3_ERD_Topomap_Differential_<ID>_<SESS>.png`    : 差分空間地形圖 (Left MI - Right MI) 展現左右側化偶極分化度
 
@@ -165,7 +165,7 @@ def infer_channel_names(n_channels):
 # ==============================================================================
 # 2. 頻譜能量與 Session Median ERD 核心運算模組
 # ==============================================================================
-def compute_band_power(x_data, fs=500, band=(8, 12)):
+def compute_band_power(x_data, fs=500, band=(8, 13)):
     """
     計算訊號在特定頻段的平均 PSD 能量
     x_data: shape (n_trials, n_channels, n_samples) 或 (n_channels, n_samples)
@@ -190,7 +190,7 @@ def compute_band_power(x_data, fs=500, band=(8, 12)):
     return band_power.squeeze()
 
 
-def extract_session_median_powers(x_trials, fs=500, band=(8, 12), task_range=(1.0, 3.5)):
+def extract_session_median_powers(x_trials, fs=500, band=(8, 13), task_range=(1.0, 3.5)):
     """
     使用全 Session 4s MI 能量中位數作為 Baseline，並擷取 Active MI 視窗 (1.0~3.5s) 作為 Task 能量
     x_trials: (n_trials, n_channels, n_samples)
@@ -280,7 +280,7 @@ def plot_erd_topomap_left_vs_right(all_runs_base, all_runs_task, all_runs_y,
                                    ch_names, subject_label="Subject 24", session_label="Session 1",
                                    save_dir="output", vmax=50.0):
     """
-    輸出圖 1：Left MI vs. Right MI 在 Mu (8-12Hz) 與 Beta (13-30Hz) 之空間對比 Topomap
+    輸出圖 1：Left MI vs. Right MI 在 Mu (8-13Hz) 與 Beta (13-30Hz) 之空間對比 Topomap
     """
     os.makedirs(save_dir, exist_ok=True)
 
@@ -309,10 +309,10 @@ def plot_erd_topomap_left_vs_right(all_runs_base, all_runs_task, all_runs_y,
 
     # (0, 0) Left MI Mu
     im1 = draw_single_topomap_ax(erd_mu_l, ch_names, axs[0, 0],
-                                 title="Left Hand MI - Mu Band (8-12 Hz)", vmax=vmax, show_names=True)
+                                 title="Left Hand MI - Mu Band (8-13 Hz)", vmax=vmax, show_names=True)
     # (0, 1) Right MI Mu
     im2 = draw_single_topomap_ax(erd_mu_r, ch_names, axs[0, 1],
-                                 title="Right Hand MI - Mu Band (8-12 Hz)", vmax=vmax, show_names=True)
+                                 title="Right Hand MI - Mu Band (8-13 Hz)", vmax=vmax, show_names=True)
     # (1, 0) Left MI Beta
     im3 = draw_single_topomap_ax(erd_beta_l, ch_names, axs[1, 0],
                                  title="Left Hand MI - Beta Band (13-30 Hz)", vmax=vmax, show_names=True)
@@ -370,7 +370,7 @@ def plot_erd_topomap_run_evolution(all_runs_base, all_runs_task, all_runs_y,
         l_mask = (y_r == 1)
         r_mask = (y_r == 0)
 
-        # Mu 頻段 (8-12 Hz)
+        # Mu 頻段 (8-13 Hz)
         erd_mu_l = np.mean(calculate_erd_percentage(b_mu[l_mask], t_mu[l_mask]), axis=0) if np.sum(l_mask) > 0 else np.zeros(len(ch_names))
         erd_mu_r = np.mean(calculate_erd_percentage(b_mu[r_mask], t_mu[r_mask]), axis=0) if np.sum(r_mask) > 0 else np.zeros(len(ch_names))
 
@@ -380,11 +380,11 @@ def plot_erd_topomap_run_evolution(all_runs_base, all_runs_task, all_runs_y,
 
         r_title_name = run_names[r] if r < len(run_names) else f"Run {r+1}"
 
-        # 第 1 列: Left Hand MI (Mu 8-12 Hz)
+        # 第 1 列: Left Hand MI (Mu 8-13 Hz)
         im = draw_single_topomap_ax(erd_mu_l, ch_names, axs[0, r], title=f"{r_title_name} (Left MI - Mu)",
                                     vmax=vmax, show_names=True)
 
-        # 第 2 列: Right Hand MI (Mu 8-12 Hz)
+        # 第 2 列: Right Hand MI (Mu 8-13 Hz)
         draw_single_topomap_ax(erd_mu_r, ch_names, axs[1, r], title=f"{r_title_name} (Right MI - Mu)",
                                vmax=vmax, show_names=True)
 
@@ -443,7 +443,7 @@ def plot_erd_topomap_differential(all_runs_base, all_runs_task, all_runs_y,
                  fontsize=13.5, fontweight='bold', y=0.96)
 
     im1 = draw_single_topomap_ax(diff_mu, ch_names, axs[0],
-                                 title="Mu Band (8-12 Hz) ΔERD", vmax=vmax, show_names=True)
+                                 title="Mu Band (8-13 Hz) ΔERD", vmax=vmax, show_names=True)
 
     im2 = draw_single_topomap_ax(diff_beta, ch_names, axs[1],
                                  title="Beta Band (13-30 Hz) ΔERD", vmax=vmax, show_names=True)
@@ -509,7 +509,7 @@ def process_subject_session_topomap(data_dir, raw_sub_id, session_str, output_ro
                     x_fake[t, c3_idx, t_mask] *= (1.0 - 0.45 * prog)
 
             p_base_mu, p_task_mu = extract_session_median_powers(
-                x_fake, fs=fs, band=(8, 12), task_range=task_range
+                x_fake, fs=fs, band=(8, 13), task_range=task_range
             )
             p_base_beta, p_task_beta = extract_session_median_powers(
                 x_fake, fs=fs, band=(13, 30), task_range=task_range
@@ -546,7 +546,7 @@ def process_subject_session_topomap(data_dir, raw_sub_id, session_str, output_ro
                                 ch_names = infer_channel_names(x_d.shape[1])
 
                             p_base_mu, p_task_mu = extract_session_median_powers(
-                                x_d, fs=500, band=(8, 12), task_range=task_range
+                                x_d, fs=500, band=(8, 13), task_range=task_range
                             )
                             p_base_beta, p_task_beta = extract_session_median_powers(
                                 x_d, fs=500, band=(13, 30), task_range=task_range
