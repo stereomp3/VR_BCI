@@ -149,8 +149,9 @@ public class SongSelectMenu : MonoBehaviour
                 // if (index == 0) cube_num.text = "MI trial: " + beatmap.notes.Count.ToString();
                 // if (song.name == Config.Calibration) cube_num.text = "MI trial: 20";
                 // else if (index == 0) cube_num.text = "MI trial: " + ((int)(beatmap.notes.Count / (Config.group_note_num + 1)) + 1).ToString();
-                if (song.name == Config.Calibration) cube_num.text = "MI trial: 40";
-                else if (index == 0) cube_num.text = "MI trial: " + ((int)(beatmap.notes.Count / (Config.group_note_num))).ToString();  // 40
+                if (song.name == Config.Calibration) cube_num.text = "MI trial: 48";
+                // else if (index == 0) cube_num.text = "MI trial: " + ((int)(beatmap.notes.Count / (Config.group_note_num))).ToString();  // 40
+                else if (index == 0) cube_num.text = "MI trial: 48" + ((int)(beatmap.notes.Count / (Config.group_note_num))).ToString();  // 40
                 else cube_num.text = "Cubes: " + beatmap.notes.Count.ToString();
 
                 /*BeatmapData data = JsonConvert.DeserializeObject<BeatmapData>(json);

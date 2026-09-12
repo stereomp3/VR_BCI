@@ -85,14 +85,52 @@ public class BeatSaberInfoLoader : MonoBehaviour
             if (sprite != null) coverImage.sprite = sprite;
         }));*/
 
-        yield return StreamingAssetLoader.LoadAudio(coverPath, play_delay_seconds, AudioType.OGGVORBIS, (clip) =>
+        string extension = Path.GetExtension(coverPath).ToLower();
+
+        AudioType audioType;
+
+        switch (extension)
         {
-            if (clip != null)
-            {
-                audioSource.clip = clip;
-                audioSource.Play();
-            }
+            case ".mp3":
+
+                audioType = AudioType.MPEG;
+                yield return StreamingAssetLoader.LoadAudio(coverPath, play_delay_seconds, audioType, (clip) =>
+                {
+                    if (clip != null)
+                    {
+                        audioSource.clip = clip;
+                        audioSource.Play();
+                    }
+                }); 
+                break;
+
+            case ".ogg":
+                audioType = AudioType.OGGVORBIS;
+                yield return StreamingAssetLoader.LoadAudio(coverPath, play_delay_seconds, audioType, (clip) =>
+                {
+                    if (clip != null)
+                    {
+                        audioSource.clip = clip;
+                        audioSource.Play();
+                    }
+                });
+                break;
+
+            case ".wav":
+                audioType = AudioType.WAV;
+                yield return StreamingAssetLoader.LoadAudio(coverPath, play_delay_seconds, audioType, (clip) =>
+                {
+                    if (clip != null)
+                    {
+                        audioSource.clip = clip;
+                        audioSource.Play();
+                    }
+                });
+                break;
+           
         }
-    );
+
+        
+    
     }
 }

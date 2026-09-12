@@ -143,16 +143,70 @@ public class Song_UI_shower : MonoBehaviour
 
     void play_audio()
     {
-        StartCoroutine(StreamingAssetLoader.LoadAudio(audio_path, 0, AudioType.OGGVORBIS, (clip) => {
-            if (clip != null)
-            {
-                audioSource.clip = clip;
-                audioSource.Play();
-                // 設定右側的內容 如果不寫在這裡，會讀取到上首歌曲的內容
-                SSM.song_time.text = "Song Time: " + FormatTime(audioSource.clip.length).ToString();
-                SSM.get_note_num(0);
-            }
-        }));
+        string extension = Path.GetExtension(audio_path).ToLower();
+
+        AudioType audioType;
+
+        switch (extension)
+        {
+            case ".mp3":
+                audioType = AudioType.MPEG;
+                break;
+
+            case ".ogg":
+                audioType = AudioType.OGGVORBIS;
+                break;
+
+            case ".wav":
+                audioType = AudioType.WAV;
+                break;
+
+            case ".aiff":
+            case ".aif":
+                audioType = AudioType.AIFF;
+                break;
+
+            case ".mod":
+                audioType = AudioType.MOD;
+                break;
+
+            case ".it":
+                audioType = AudioType.IT;
+                break;
+
+            case ".s3m":
+                audioType = AudioType.S3M;
+                break;
+
+            case ".xm":
+                audioType = AudioType.XM;
+                break;
+
+            default:
+                Debug.LogError("不支援的音樂格式: " + extension);
+                return;
+        }
+
+        StartCoroutine(
+            StreamingAssetLoader.LoadAudio(
+                audio_path,
+                0,
+                audioType,
+                (clip) =>
+                {
+                    if (clip != null)
+                    {
+                        audioSource.clip = clip;
+                        audioSource.Play();
+
+                        SSM.song_time.text =
+                            "Song Time: " + FormatTime(audioSource.clip.length);
+
+                        SSM.get_note_num(0);
+                    }
+                }
+            )
+        );
         /*if (audioSource == null)
         {
             StartCoroutine(StreamingAssetLoader.LoadAudio(audio_path, 0, AudioType.OGGVORBIS, (clip) => {

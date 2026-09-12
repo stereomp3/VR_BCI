@@ -77,7 +77,7 @@ public class BeatmapSpawner : MonoBehaviour
                     {
                         StartCoroutine(GM.SetFinalAcc());
                         // StartCoroutine(ECEOCondition(Config.adaptive_model)); // 睜眼閉眼任務，與是否訓練
-                        StartCoroutine(ECEOCondition(false)); // 睜眼閉眼任務，與是否訓練
+                        // StartCoroutine(ECEOCondition(false)); // 睜眼閉眼任務，與是否訓練 
                     }
                     beatSaberInfoLoader.is_end_song = true;
                     return;
@@ -453,7 +453,7 @@ public class BeatmapSpawner : MonoBehaviour
                 float timeDiff = nextNote.time - firstNote.time;
                 if (timeDiff > beatThreshold_up) break;
                 // 5
-                // Debug.Log("@@@@@@@@@@@@@@@@@@@@@@@ timeDiff: " + timeDiff + ", beatThreshold_up: "  + beatThreshold_up);
+                Debug.Log("@@@@@@@@@@@@@@@@@@@@@@@ timeDiff: " + timeDiff + ", beatThreshold_up: " + beatThreshold_up + ", first: " + firstNote.time);
                 currentGroup.Add(nextNote);
                 lookAheadCount++;
             }
