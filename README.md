@@ -274,6 +274,7 @@ python/else/
 │   ├── download_models.py           # 自動下載 Essentia MusiCNN 預訓練骨幹模型與標籤
 │   ├── music_analyzer2.py           # MusiCNN 音樂情緒/風格一致性分析與離群值檢測
 │   ├── dat_process.py               # 根據間隔過濾刪除多餘 Note
+│   ├── create_note_data.py          # 自動產生 note，可以用於 AI 生成音樂
 │   └── map3to2.py                   # 歌曲 Map v3 轉 v2 格式相容轉換工具
 │
 └── utils/                           # 【8. 通用共用工具庫】
@@ -387,10 +388,10 @@ python python/else/analysis/subject_stratification.py --top_pct 30 --bottom_pct 
   ```bash
   # 批次生成所有 24 位受試者 (S1~S24)
   python python/else/neuro_analysis/erd_topomap_analysis.py --data_dir <資料集目錄> --output_dir ./erd_output -all
-
+  
   # 單一受試者 (例如 Subject 44, Session 1)
   python python/else/neuro_analysis/erd_topomap_analysis.py --data_dir <資料集目錄> --subject 44 --session s1
-
+  
   # 執行 Demo 擬真合成資料測試模式 (無實體檔案亦可快速驗證)
   python python/else/neuro_analysis/erd_topomap_analysis.py --demo
   ```
@@ -521,6 +522,5 @@ python python/else/music_tools/music_analyzer2.py
 
 
 
-
-
+使用 AI 生成音樂可以使用 `create_note_data` 產生對應 note 的內容
 
