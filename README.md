@@ -270,7 +270,9 @@ python/else/
 │   ├── nasa_tlx_charts.py           # 繪製 NASA-TLX 認知負荷問卷分析圖表
 │   └── find_best_parameter.py       # 萃取 online_simulation 日誌找出最佳超參數組合
 │
-├── music_tools/                     # 【7. 歌曲地圖工具】
+├── music_tools/                     # 【7. 歌曲地圖與音樂情緒工具】
+│   ├── download_models.py           # 自動下載 Essentia MusiCNN 預訓練骨幹模型與標籤
+│   ├── music_analyzer2.py           # MusiCNN 音樂情緒/風格一致性分析與離群值檢測
 │   ├── dat_process.py               # 根據間隔過濾刪除多餘 Note
 │   └── map3to2.py                   # 歌曲 Map v3 轉 v2 格式相容轉換工具
 │
@@ -370,10 +372,27 @@ python python/else/analysis/subject_stratification.py --top_pct 30 --bottom_pct 
   python python/else/neuro_analysis/TFA2.py --base_dir <資料集目錄> --output_dir ./TFA_output --channels 22 --ids 35,37,70
   ```
 * **ERD Topomap (`neuro_analysis/erd_topomap_analysis.py`)**：
-  繪製 ERD Tompmap，計算方式為使用 Run 的能量中位數當 baseline，然後分別計算 Mu 與 Beta 頻段：
+  全局 ERD 空間地形圖與學習軌跡分析系統，採用 Session 中位數作為強健基準 (Session Median Baseline)，分別計算 Mu (8-13Hz) 與 Beta (13-30Hz) 頻段 ERD%：
+  - **最新版面升級特色 (Paper Grid)**：
+    - **Session 獨立總覽大圖 (`2_ERD_Topomap_Run_Evolution`)**：改為 Session 1 與 Session 2 獨立劃分輸出大圖，版面更對稱整齊。
+    - **動作類別縱軸標籤**：左側縱軸清晰以換行形式標註 `Left\nMI` 與 `Right\nMI`。
+    - **對稱頻帶橫軸標籤**：頂部欄位精準對齊 `Run 1 ~ Run 7`，下方對稱標註 `Mu (8-13 Hz)` 與 `Beta (13-30 Hz)`。
+    - **高質感視覺層次**：奇數 Run 欄位覆蓋 `0.05` 深灰半透明斑馬紋遮罩，水平灰色虛線與文字標籤置於最頂層確保銳利清晰。
+    - **缺圖自動留白對齊**：若 Run 數量為 6，系統自動將 Run 3 (第 3 格) 留白對齊，維持跨受試者格式一致。
+  - **三大類獨立輸出圖表** (儲存於 `output_dir/<id>/`)：
+    1. `1_ERD_Topomap_Left_vs_Right_<ID>_<SESS>.png`：左右手 x 頻段空間對比圖
+    2. `2_ERD_Topomap_Run_Evolution_Sub<ID>_Session<X>_Grid.png`：各 Session 學習演化總覽 Grid 地形圖
+    3. `3_ERD_Topomap_Differential_<ID>_<SESS>.png`：差分空間地形圖 (Left MI - Right MI)
   
   ```bash
+  # 批次生成所有 24 位受試者 (S1~S24)
   python python/else/neuro_analysis/erd_topomap_analysis.py --data_dir <資料集目錄> --output_dir ./erd_output -all
+
+  # 單一受試者 (例如 Subject 44, Session 1)
+  python python/else/neuro_analysis/erd_topomap_analysis.py --data_dir <資料集目錄> --subject 44 --session s1
+
+  # 執行 Demo 擬真合成資料測試模式 (無實體檔案亦可快速驗證)
+  python python/else/neuro_analysis/erd_topomap_analysis.py --demo
   ```
 * **眼動偽影作弊檢驗 (`neuro_analysis/eyes_movement_detect.py`)**：
   批次檢驗 Fp1 / Fp2 是否有透過眼球轉動或眨眼的波形：
@@ -383,14 +402,25 @@ python python/else/analysis/subject_stratification.py --top_pct 30 --bottom_pct 
   ```
 * **Saliency Topomap 與 PSD (`saliency_plot/draw_saliency_topo_PSD.py`)**：
   繪製 Mu/Alpha (8-13Hz) 與 Beta (13-30Hz) 之 Saliency Topomap 及頻譜圖：
+  - **單圖排版優化 (`draw_saliency_topo_PSD.py`)**：
+    - **移除右側 Colorbar**：使 Topomap 自動水平置中並顯著放大，整體版面更開闊易讀。
+    - **獨立動態色彩尺度 (`vlim`)**：Mu 與 Beta 各自使用獨立的動態範圍極值，避免高能量頻帶壓縮弱能量頻帶的色彩動態對比，完整展開雙頻帶空間細節。
+  - **全受試者 7x24 矩陣總覽大圖 (`draw_saliency_topo_PSD_all.py`)**：
+    - 規格：7 欄 (Run 1~7) x 24 列 (Subject 01~24)。
+    - 頂部標註 Run 1~7 與 Mu/Beta 頻帶標籤，左側標註 Subject 01~24 兩位數序號。
+    - 奇數 Run 覆蓋 0.05 深灰半透明斑馬紋遮罩，使用襯線字體與灰色虛線置頂。
+  - **跨 Session 成對比較圖 (`draw_saliency_topo_PSD_pair.py`)**：
+    - 灰色斑馬紋遮罩置於頂層半透明覆蓋 (0.05 透明度)，文字與虛線置頂確保清晰銳利。
   
   ```bash
-  # 把 saliency map 單張生成，這個最花時間
+  # 1. 批次繪製單一受試者 Saliency Topomap 與 PSD 複合圖 (最耗時)
   python python/else/saliency_plot/draw_saliency_topo_PSD.py --channels 22 --base_dir <資料集目錄>
   
-  # 其他根據上面生成的內容，生成對應的版面
-  python python/else/saliency_plot/draw_saliency_topo_PSD_all.py # 下圖
-  python python/else/saliency_plot/draw_saliency_topo_PSD_pair.py  # 下下圖
+  # 2. 合併全部 24 位受試者為 7x24 矩陣大圖 (輸出至 Grid_Outputs/)
+  python python/else/saliency_plot/draw_saliency_topo_PSD_all.py
+  
+  # 3. 合併同受試者跨 Session 成對比較圖
+  python python/else/saliency_plot/draw_saliency_topo_PSD_pair.py
   ```
   ![](./picture/Sub44_s1_c0_combined.png)
   ![](./picture/22_AllSubjects_s1_Label0.png)
@@ -452,7 +482,43 @@ Task: 移除 Meta Quest 相關內容
 
 > 新增歌曲
 
-如果需要新增加歌曲，可以到 https://beatsaver.com/ 下載 map，然後使用 `python/dat_process.py` 把歌曲變成 unity 可以讀取的形式，如果歌曲版本太新，unity 無法讀取，可以使用 `python/map3to2.py` ，把歌曲 json 格式稍微更改，然後再放入 unity，unity 歌曲主要放入到 `unity/Assets/StreamingAssets`，然後在 `unity/Assets/SO/Songs` 有紀錄各檔案的位置資訊，在 lobby UI `Song Select UI>CanvasRoot>UIBackplate+VerticalLayoutGroup>Horizontal>SongsL>Viewport>Content` 下面把新的歌曲放入，然後加入對應的 Scriptable Object (SO) 就可以在畫面上看到新的歌曲
+如果需要新增加歌曲，可以到 https://beatsaver.com/ 下載 map，然後使用 `python/else/music_tools/dat_process.py` 把歌曲變成 unity 可以讀取的形式，如果歌曲版本太新，unity 無法讀取，可以使用 `python/else/music_tools/map3to2.py` ，把歌曲 json 格式稍微更改，然後再放入 unity，unity 歌曲主要放入到 `unity/Assets/StreamingAssets`，然後在 `unity/Assets/SO/Songs` 有紀錄各檔案的位置資訊，在 lobby UI `Song Select UI>CanvasRoot>UIBackplate+VerticalLayoutGroup>Horizontal>SongsL>Viewport>Content` 下面把新的歌曲放入，然後加入對應的 Scriptable Object (SO) 就可以在畫面上看到新的歌曲。
+
+> 音樂情緒與風格一致性檢驗 (Music Emotion & Style Consistency)
+
+在腦波（EEG）動作想像與自適應神經回饋實驗中，受試者在遊戲過程中所聆聽的歌曲**風格與情緒一致性**是控制實驗變項的重要環節。若各 Run 或不同難度下的曲目在情緒激昂度、節奏風格或調性上差異過大，可能會引發非預期的自律神經與皮質誘發電位擾動，進而干擾動作想像（MI）的特徵表現。
+
+本專案整合基於 **MusiCNN (Essentia)** 的自動化音樂情緒與風格一致性分析工具（位於 `python/else/music_tools/`）：
+
+#### 1. 骨幹模型一鍵下載 (`python/else/music_tools/download_models.py`)
+自動從 Essentia 官方倉庫下載 MusiCNN 深度學習預訓練權重與 50 種風格/情緒標籤：
+```bash
+python python/else/music_tools/download_models.py
+```
+執行後將在 `models/` 目錄下載以下檔案：
+- `msd-musicnn-1.pb`: MusiCNN 卷積神經網路骨幹權重（輸入為 Mel Spectrogram）
+- `msd-musicnn-1.json`: 50 款包含曲風 (rock, jazz, electronic...) 與情緒 (happy, fast, slow, dramatic...) 的標籤對照表
+
+#### 2. 歌單情緒風格一致性與離群值判定 (`python/else/music_tools/music_analyzer2.py`)
+將待測歌單的所有音訊檔案（支援 `.ogg`, `.wav`, `.mp3` 等）逐一萃取高維特徵向量，計算兩兩之間的成對餘弦相似度 (Pairwise Cosine Similarity) 矩陣，評估整體歌單相容性並自動標註離群值：
+```bash
+python python/else/music_tools/music_analyzer2.py
+```
+
+- **核心技術機制**：
+  1. **梅爾頻譜轉換 (Mel Spectrogram)**：以 16kHz 取樣音訊，透過 Essentia `TensorflowInputMusiCNN` 與 `FrameGenerator` 轉為頻譜特徵。
+  2. **特徵嵌入 (Embedding Extraction)**：透過 MusiCNN 提取 200 維 Dense 特徵向量並對所有 Patch 進行平均聚合 (Global Embedding)，同時預測前 3 大顯著標籤 (Top Tags)。
+  3. **成對相似度矩陣 (Pairwise Cosine Similarity Matrix)**：計算每首歌曲之間的餘弦相似度：
+     $$\text{Similarity}(v_1, v_2) = 1 - \text{cosine}(v_1, v_2)$$
+  4. **全域與個體一致性報告**：
+     - **整體歌單平均相似度**：若高於設定門檻（預設 `0.75`，同曲風嚴格可設 `0.80`），判定為 `[通過] - 實驗材料風格一致`；否則提示風格變異過大。
+     - **離群值檢驗 (Outlier Detection)**：若某首歌曲與歌單中其餘歌曲之平均相似度低於門檻，終端將以紅色警示標註 `Outlier 警告` 並列出其主導標籤，建議研究人員自實驗刺激清單中剔除該曲目。
+
+- **相依套件安裝需求**：
+  ```bash
+  pip install essentia tensorflow requests
+  ```
+
 
 
 

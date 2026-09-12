@@ -1,61 +1,37 @@
 """
 ================================================================================
-BCI 全局 ERD Topomap 空間地形圖與學習軌跡分析系統 (Session Median 專用版)
+BCI 全局 ERD Topomap 空間地形圖與學習軌跡分析系統 (Session 獨立總覽 + Left/Right MI 版)
 (Global BCI ERD Topomap Spatial & Learning Progression Analyzer)
 ================================================================================
-
-【功能特色】
-1. 採用最佳全域基準策略 (Session Median Baseline)：
-   - 以全 Session 4 秒 MI Data 之頻段能量中位數作為強健基準 (P_base = Median(P_trials))。
-   - 擷取 Active MI 視窗 (預設 1.0s ~ 3.5s) 計算任務能量 (P_task)。
-   - 計算標準去同步化百分比：ERD% = (P_task - P_base) / P_base * 100%。
-
-2. 三大類專業論文級 Topomap 獨立輸出 (儲存於 <output_dir>/<id>/)：
-   - `1_ERD_Topomap_Left_vs_Right_<ID>_<SESS>.png`  : 左右手 (Left/Right MI) x 頻段 (Mu 8-13Hz / Beta 13-30Hz) 空間對比
-   - `2_ERD_Topomap_Run_Evolution_<ID>_<SESS>.png`   : Run 演化學習進程 (支援 6 Run: Run 1, 2, 4, 5, 6, 7，全電極文字標籤)
-   - `3_ERD_Topomap_Differential_<ID>_<SESS>.png`    : 差分空間地形圖 (Left MI - Right MI) 展現左右側化偶極分化度
-
-3. 支援 `-all` / `--all` 全受試者 (S1~S24, ID: 35~70) 批次自動運算與獨立資料夾歸檔。
-4. 內建 `--demo` 擬真資料測試模式，無實體資料亦可快速驗證圖表生成。
-
-使用範例：
-  # 1. 批次生成所有 24 位受試者 (S1~S24)
-  python erd_topomap_analysis.py --data_dir /mnt/project/MIEXP/DATA_Cygnus -all
-
-  # 2. 生成單一受試者 (例如 Subject 70, Session 1)
-  python erd_topomap_analysis.py --data_dir /mnt/project/MIEXP/DATA_Cygnus --subject 70 --session s1
-
-  # 3. 執行 Demo 擬真測試
-  python erd_topomap_analysis.py --demo
+【核心升級與視覺樣式】
+1. 學習軌跡總覽大圖 (2_ERD_Topomap_Run_Evolution) 改以 Session 獨立劃分：
+   - 每個 Session (Session 1 與 Session 2) 各自輸出一張獨立總覽大圖
+   - 左側縱軸兩列標籤：第一列為 Left MI (換行顯示)、第二列為 Right MI (換行顯示)
+   - 頂部橫軸欄位：Run 1 ~ Run 7，下方對稱標註 Mu (8-13 Hz) 與 Beta (13-30 Hz)
+   - 左上角標註：兩位數受試者序號 (01 ~ 24) 與 Session 標籤 (S1 / S2)
+   - 最頂層半透明遮罩：奇數 Run 欄位 (Run 1, 3, 5, 7) 覆蓋 0.05 深灰半透明斑馬紋
+   - 水平灰色虛線：位於最頂層，清晰分隔 Header 與各動作類別列
+   - 缺圖對齊邏輯：若 Run 數量為 6，自動將 Run 3 (第 3 格) 留白對齊
+2. 保留三大類 Topomap 獨立分析：
+   - 1_ERD_Topomap_Left_vs_Right_<ID>_<SESS>.png : 左右手 x 頻段空間對比圖
+   - 2_ERD_Topomap_Run_Evolution_Sub<ID>_Session<X>_Grid.png : 專業總覽 Grid 地形圖
+   - 3_ERD_Topomap_Differential_<ID>_<SESS>.png  : 差分空間地形圖 (Left MI - Right MI)
+3. 支援 -all 批次處理 24 位受試者，並內建 --demo 擬真測試模式。
 ================================================================================
 """
-
 import os
 import sys
-import re
+import io
 import argparse
-import datetime
-from datetime import datetime, timezone, timedelta
+from datetime import datetime
 from functools import wraps
-
-if hasattr(sys.stdout, 'reconfigure'):
-    try:
-        sys.stdout.reconfigure(encoding='utf-8', errors='replace')
-        sys.stderr.reconfigure(encoding='utf-8', errors='replace')
-    except Exception:
-        pass
-
-current_dir = os.path.dirname(os.path.abspath(__file__))
-parent_dir = os.path.dirname(current_dir)
-for p in [current_dir, parent_dir, os.path.join(parent_dir, "utils")]:
-    if p not in sys.path:
-        sys.path.insert(0, p)
 
 import numpy as np
 import torch
 import matplotlib.pyplot as plt
 import matplotlib.colors as mcolors
 from scipy.signal import butter, filtfilt, welch
+from PIL import Image, ImageDraw, ImageFont
 
 # 嘗試引入 MNE
 try:
@@ -67,23 +43,18 @@ except ImportError:
 # 設定 Matplotlib 樣式
 plt.rcParams['font.sans-serif'] = ['DejaVu Sans', 'Arial', 'Microsoft JhengHei']
 plt.rcParams['axes.unicode_minus'] = False
+Image.MAX_IMAGE_PIXELS = None
 
-
-# ==============================================================================
+# ==========================================
 # 0. 系統通道定義與全受試者對照表
-# ==============================================================================
+# ==========================================
 CH_NAMES_22 = [
     'Fp1', 'Fp2', 'AF3', 'AF4', 'F3', 'Fz', 'F4', 'FC3', 'FCz', 'FC4',
     'C3', 'Cz', 'C4', 'CP3', 'CPz', 'CP4', 'P3', 'Pz', 'P4', 'O1', 'Oz', 'O2'
 ]
-
-CH_INDICES_22 = [2, 3, 4, 5, 7, 8, 9, 12, 13, 14, 17, 18, 19, 22, 23, 24, 27, 28, 29, 31, 32, 33]
-
 CH_NAMES_13 = [
     'F3', 'Fz', 'F4', 'FC3', 'FCz', 'FC4', 'C3', 'Cz', 'C4', 'CP3', 'CPz', 'CP4', 'Pz'
 ]
-
-CH_INDICES_13 = [7, 8, 9, 12, 13, 14, 17, 18, 19, 22, 23, 24, 28]
 
 ALL_SUBJECT_IDS = [
     "35", "37", "38", "40", "41", "42", "43", "44", "45", "47",
@@ -99,12 +70,11 @@ SUBJECT_MAP = {
     "65": "S21", "68": "S22", "69": "S23", "70": "S24"
 }
 
-
 def get_subject_display_name(raw_sub_id):
-    """將原始 ID (例如 70, 35) 或代號 (例如 S24) 轉換為 Subject 1 ~ Subject 24 正式名稱"""
+    """將原始 ID (例如 70, 44) 轉換為 Subject X 正式名稱"""
     sub_str = str(raw_sub_id).strip()
     if sub_str in SUBJECT_MAP:
-        s_code = SUBJECT_MAP[sub_str]  # e.g. "S24"
+        s_code = SUBJECT_MAP[sub_str]
         num = s_code.replace("S", "")
         return f"Subject {num}"
     elif sub_str.upper().startswith("S") and sub_str[1:].isdigit():
@@ -114,28 +84,63 @@ def get_subject_display_name(raw_sub_id):
     else:
         return f"Subject {sub_str}"
 
+def get_subject_two_digit_order(raw_sub_id):
+    """取得受試者 01~24 兩位數字串"""
+    sub_str = str(raw_sub_id).strip()
+    if sub_str in ALL_SUBJECT_IDS:
+        return f"{ALL_SUBJECT_IDS.index(sub_str) + 1:02d}"
+    elif sub_str in SUBJECT_MAP:
+        num = int(SUBJECT_MAP[sub_str].replace("S", ""))
+        return f"{num:02d}"
+    elif sub_str.isdigit():
+        return f"{int(sub_str):02d}"
+    return "01"
 
-# ==============================================================================
-# 1. 輸出日誌工具
-# ==============================================================================
+# ==========================================
+# 1. 跨平台字體載入與繪圖工具函式
+# ==========================================
+def get_serif_font(size):
+    """載入襯線體 (Times New Roman / DejaVuSerif)"""
+    font_candidates = [
+        "times.ttf", "timesbd.ttf", "arial.ttf",
+        "/usr/share/fonts/truetype/dejavu/DejaVuSerif.ttf",
+        "/usr/share/fonts/truetype/dejavu/DejaVuSerif-Bold.ttf",
+        "/usr/share/fonts/truetype/liberation/LiberationSerif-Regular.ttf",
+        "/usr/share/fonts/truetype/freefont/FreeSerif.ttf",
+        "/System/Library/Fonts/Times.ttc",
+    ]
+    for font_path in font_candidates:
+        try:
+            return ImageFont.truetype(font_path, size)
+        except Exception:
+            continue
+    try:
+        return ImageFont.load_default()
+    except Exception:
+        return None
+
+def draw_horizontal_dashed_line(draw, y, total_width, dash_len=24, gap_len=14, line_width=4, color=(195, 195, 195)):
+    """繪製水平灰色虛線"""
+    x = 0
+    while x < total_width:
+        x_end = min(x + dash_len, total_width)
+        draw.line([(x, y), (x_end, y)], fill=color, width=line_width)
+        x += dash_len + gap_len
+
 class Tee:
     def __init__(self, *files):
         self.files = files
-
     def write(self, obj):
         for f in self.files:
             f.write(obj)
             f.flush()
-
     def flush(self):
         for f in self.files:
             f.flush()
 
-
 def tee_log(log_file=None):
     if log_file is None:
         log_file = f"erd_topomap_log_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt"
-
     def decorator(func):
         @wraps(func)
         def wrapper(*args, **kwargs):
@@ -151,9 +156,7 @@ def tee_log(log_file=None):
         return wrapper
     return decorator
 
-
 def infer_channel_names(n_channels):
-    """根據 channel 數量推測標籤清單"""
     if n_channels == 22:
         return CH_NAMES_22
     elif n_channels == 13:
@@ -161,270 +164,312 @@ def infer_channel_names(n_channels):
     else:
         return [f"Ch{i+1}" for i in range(n_channels)]
 
-
-# ==============================================================================
-# 2. 頻譜能量與 Session Median ERD 核心運算模組
-# ==============================================================================
+# ==========================================
+# 2. 頻譜能量與 Session Median ERD 核心運算
+# ==========================================
 def compute_band_power(x_data, fs=500, band=(8, 13)):
-    """
-    計算訊號在特定頻段的平均 PSD 能量
-    x_data: shape (n_trials, n_channels, n_samples) 或 (n_channels, n_samples)
-    return: shape (n_trials, n_channels) 或 (n_channels,)
-    """
     if x_data.ndim == 2:
         x_data = x_data[np.newaxis, :, :]
-
     n_trials, n_channels, n_samples = x_data.shape
     nperseg = min(n_samples, int(fs * 0.5))
     if nperseg < 8:
         nperseg = n_samples
-
     freqs, psd = welch(x_data, fs=fs, nperseg=nperseg, noverlap=nperseg // 2, axis=-1)
     mask = (freqs >= band[0]) & (freqs <= band[1])
-
     if np.sum(mask) == 0:
         band_power = np.mean(psd, axis=-1)
     else:
         band_power = np.mean(psd[:, :, mask], axis=-1)
-
     return band_power.squeeze()
 
-
 def extract_session_median_powers(x_trials, fs=500, band=(8, 13), task_range=(1.0, 3.5)):
-    """
-    使用全 Session 4s MI 能量中位數作為 Baseline，並擷取 Active MI 視窗 (1.0~3.5s) 作為 Task 能量
-    x_trials: (n_trials, n_channels, n_samples)
-    """
     n_trials, n_channels, n_samples = x_trials.shape
     t_axis = np.arange(n_samples) / fs
-
-    # 1. 擷取 Task 區間 (1.0s ~ 3.5s)
     t_mask = (t_axis >= task_range[0]) & (t_axis <= task_range[1])
-    if np.sum(t_mask) == 0:
-        task_data = x_trials
-    else:
-        task_data = x_trials[:, :, t_mask]
-
-    p_task = compute_band_power(task_data, fs=fs, band=band)  # (n_trials, n_channels)
+    task_data = x_trials if np.sum(t_mask) == 0 else x_trials[:, :, t_mask]
+    
+    p_task = compute_band_power(task_data, fs=fs, band=band)
     if p_task.ndim == 1:
         p_task = p_task[np.newaxis, :]
-
-    # 2. 全 Session 4s 中位數基準
+        
     all_powers = compute_band_power(x_trials, fs=fs, band=band)
     if all_powers.ndim == 1:
         all_powers = all_powers[np.newaxis, :]
-    med_p = np.median(all_powers, axis=0)  # (n_channels,)
-    p_base = np.tile(med_p, (n_trials, 1))  # (n_trials, n_channels)
-
+    med_p = np.median(all_powers, axis=0)
+    p_base = np.tile(med_p, (n_trials, 1))
     return p_base, p_task
 
-
 def calculate_erd_percentage(p_base, p_task):
-    """
-    標準 Pfurtscheller 公式計算 ERD 百分比：
-    ERD% = (P_task - P_base) / P_base * 100%
-    """
-    erd = (p_task - p_base) / (p_base + 1e-8) * 100.0
-    return erd
+    return (p_task - p_base) / (p_base + 1e-8) * 100.0
 
-
-# ==============================================================================
-# 3. Topomap 繪圖核心工具 (MNE 與備用 2D 內插自適應支援)
-# ==============================================================================
+# ==========================================
+# 3. Topomap 繪製核心模組
+# ==========================================
 def draw_single_topomap_ax(erd_values, ch_names, ax, title="", vmax=60.0,
-                           show_names=True, highlight_chs=('C3', 'C4', 'Cz')):
-    """
-    在指定的 Matplotlib Axes 上繪製單一 ERD Topomap
-    """
+                           show_names=True, cmap='RdBu_r'):
     n_ch = len(ch_names)
     vmax = float(vmax)
     vmin = -vmax
-
     if HAS_MNE:
-        # 使用 MNE 標準 10-20 座標系統
         info = mne.create_info(ch_names=ch_names, sfreq=500, ch_types='eeg')
         montage = mne.channels.make_standard_montage('standard_1020')
         info.set_montage(montage, on_missing='ignore')
-
         try:
-            # 支援新舊版本 MNE 參數
             im, _ = mne.viz.plot_topomap(
                 data=erd_values,
                 pos=info,
                 axes=ax,
                 show=False,
-                cmap='RdBu_r',
+                cmap=cmap,
                 vlim=(vmin, vmax),
                 sensors=True,
                 names=ch_names if show_names else None,
                 contours=4
             )
-            ax.set_title(title, fontsize=11, fontweight='bold', pad=8)
+            if title:
+                ax.set_title(title, fontsize=11, fontweight='bold', pad=8)
             return im
         except Exception:
             pass
 
-    # 備用方案 (Fallback)：2D 簡易散點極坐標繪圖
-    ax.set_title(title, fontsize=11, fontweight='bold')
-    sc = ax.scatter(np.arange(n_ch), erd_values, c=erd_values, cmap='RdBu_r', vmin=vmin, vmax=vmax, s=120)
+    if title:
+        ax.set_title(title, fontsize=11, fontweight='bold')
+    sc = ax.scatter(np.arange(n_ch), erd_values, c=erd_values, cmap=cmap, vmin=vmin, vmax=vmax, s=120)
     ax.axhline(0, color='gray', linestyle='--')
     ax.set_xticks(range(n_ch))
     ax.set_xticklabels(ch_names, rotation=45, fontsize=8)
     return sc
 
+def render_run_cell_image(erd_mu, erd_beta, ch_names, tw=600, th=340, vmax=50.0):
+    """將單一 Run 的 Mu 與 Beta Topomap 繪製為一張子圖圖片 (二者水平並列)"""
+    fig, axs = plt.subplots(1, 2, figsize=(tw / 100.0, th / 100.0), dpi=100)
+    fig.subplots_adjust(left=0.03, right=0.97, bottom=0.04, top=0.96, wspace=0.06)
 
-# ==============================================================================
+    draw_single_topomap_ax(erd_mu, ch_names, axs[0], title="", vmax=vmax, show_names=True)
+    draw_single_topomap_ax(erd_beta, ch_names, axs[1], title="", vmax=vmax, show_names=True)
+
+    buf = io.BytesIO()
+    plt.savefig(buf, format='png', dpi=100, transparent=True)
+    plt.close(fig)
+    buf.seek(0)
+    return Image.open(buf).convert('RGBA')
+
+def render_vertical_colorbar(cbar_w=160, th=340, vmax=50.0, label="ERD / ERS (%)"):
+    """繪製垂直獨立 Colorbar 供 Grid 右側掛載"""
+    fig = plt.figure(figsize=(cbar_w / 100.0, th / 100.0), dpi=100)
+    ax = fig.add_axes([0.18, 0.15, 0.22, 0.70])
+    norm = mcolors.Normalize(vmin=-vmax, vmax=vmax)
+    cb = plt.colorbar(plt.cm.ScalarMappable(norm=norm, cmap='RdBu_r'), cax=ax)
+    cb.set_label(label, fontsize=13, fontweight='bold', labelpad=10)
+    cb.ax.tick_params(labelsize=11)
+    buf = io.BytesIO()
+    plt.savefig(buf, format='png', dpi=100, transparent=True)
+    plt.close(fig)
+    buf.seek(0)
+    return Image.open(buf).convert('RGBA')
+
+# ==========================================
 # 4. 【獨立圖表 1】左右手 x 頻段 2x2 空間對比 Topomap
-# ==============================================================================
+# ==========================================
 def plot_erd_topomap_left_vs_right(all_runs_base, all_runs_task, all_runs_y,
                                    ch_names, subject_label="Subject 24", session_label="Session 1",
                                    save_dir="output", vmax=50.0):
-    """
-    輸出圖 1：Left MI vs. Right MI 在 Mu (8-13Hz) 與 Beta (13-30Hz) 之空間對比 Topomap
-    """
     os.makedirs(save_dir, exist_ok=True)
-
-    # 合併所有 Run
     flat_base_mu = np.concatenate([r['base_mu'] for r in all_runs_base])
     flat_task_mu = np.concatenate([r['task_mu'] for r in all_runs_task])
     flat_base_beta = np.concatenate([r['base_beta'] for r in all_runs_base])
     flat_task_beta = np.concatenate([r['task_beta'] for r in all_runs_task])
     flat_y = np.concatenate(all_runs_y)
-
+    
     left_mask = (flat_y == 1)
     right_mask = (flat_y == 0)
 
-    # 計算平均 ERD%
     erd_mu_l = np.mean(calculate_erd_percentage(flat_base_mu[left_mask], flat_task_mu[left_mask]), axis=0)
     erd_mu_r = np.mean(calculate_erd_percentage(flat_base_mu[right_mask], flat_task_mu[right_mask]), axis=0)
-
     erd_beta_l = np.mean(calculate_erd_percentage(flat_base_beta[left_mask], flat_task_beta[left_mask]), axis=0)
     erd_beta_r = np.mean(calculate_erd_percentage(flat_base_beta[right_mask], flat_task_beta[right_mask]), axis=0)
 
     fig, axs = plt.subplots(2, 2, figsize=(11, 10))
     fig.subplots_adjust(hspace=0.25, wspace=0.15, right=0.88, top=0.88)
-
     fig.suptitle(f"Motor Imagery ERD/ERS Topomap: {subject_label} | {session_label}",
                  fontsize=14, fontweight='bold', y=0.97)
 
-    # (0, 0) Left MI Mu
-    im1 = draw_single_topomap_ax(erd_mu_l, ch_names, axs[0, 0],
-                                 title="Left Hand MI - Mu Band (8-13 Hz)", vmax=vmax, show_names=True)
-    # (0, 1) Right MI Mu
-    im2 = draw_single_topomap_ax(erd_mu_r, ch_names, axs[0, 1],
-                                 title="Right Hand MI - Mu Band (8-13 Hz)", vmax=vmax, show_names=True)
-    # (1, 0) Left MI Beta
-    im3 = draw_single_topomap_ax(erd_beta_l, ch_names, axs[1, 0],
-                                 title="Left Hand MI - Beta Band (13-30 Hz)", vmax=vmax, show_names=True)
-    # (1, 1) Right MI Beta
-    im4 = draw_single_topomap_ax(erd_beta_r, ch_names, axs[1, 1],
-                                 title="Right Hand MI - Beta Band (13-30 Hz)", vmax=vmax, show_names=True)
+    im1 = draw_single_topomap_ax(erd_mu_l, ch_names, axs[0, 0], title="Left Hand MI - Mu Band (8-13 Hz)", vmax=vmax)
+    draw_single_topomap_ax(erd_mu_r, ch_names, axs[0, 1], title="Right Hand MI - Mu Band (8-13 Hz)", vmax=vmax)
+    draw_single_topomap_ax(erd_beta_l, ch_names, axs[1, 0], title="Left Hand MI - Beta Band (13-30 Hz)", vmax=vmax)
+    draw_single_topomap_ax(erd_beta_r, ch_names, axs[1, 1], title="Right Hand MI - Beta Band (13-30 Hz)", vmax=vmax)
 
-    # 統一右側垂直 Colorbar
     cbar_ax = fig.add_axes([0.91, 0.20, 0.025, 0.60])
     cbar = fig.colorbar(im1, cax=cbar_ax)
     cbar.set_label('ERD / ERS (%)', fontsize=11, fontweight='bold')
 
     out_name = f"1_ERD_Topomap_Left_vs_Right_{subject_label.replace(' ', '')}_{session_label.replace(' ', '')}.png"
-    out_path = os.path.join(save_dir, out_name)
-    plt.savefig(out_path, dpi=200, bbox_inches='tight')
+    plt.savefig(os.path.join(save_dir, out_name), dpi=200, bbox_inches='tight')
     plt.close(fig)
     print(f"  ✓ [已生成] 左右手對比 Topomap: {out_name}")
 
-
-# ==============================================================================
-# 5. 【獨立圖表 2】Run 1 ~ Run 7 學習進程演化 Topomap (Mu & Beta 頻段並列)
-# ==============================================================================
-def plot_erd_topomap_run_evolution(all_runs_base, all_runs_task, all_runs_y,
-                                    ch_names, run_names=None,
-                                    subject_label="Subject 24", session_label="Session 1",
-                                    save_dir="output", vmax=50.0):
+# ==========================================
+# 5. 【獨立圖表 2】專業 Paper 級 Run 演化進程總覽 Grid (Session 獨立版)
+# ==========================================
+def generate_erd_session_run_grid(session_data, ch_names, raw_sub_id, session_str="s1",
+                                 save_dir="output", vmax=50.0):
     """
-    輸出圖 2：Run 演化進程 Topomap，支援 6 Run (Run 1, 2, 4, 5, 6, 7) 並同時展示 Mu 與 Beta 頻段 (4 列)
+    輸出圖 2：單一 Session 專用總覽圖 (7 Run 欄位 x 2 動作類別列)
+    【排版架構】
+    - 畫布規格：以單一 Session (Session 1 或 Session 2) 獨立繪製
+    - 第一列 (Row 0)：Left MI (Label 1)
+    - 第二列 (Row 1)：Right MI (Label 0)
+    - 左側縱軸文字：分別標註 'Left\\nMI' 與 'Right\\nMI'
+    - 左上角：標示受試者序號 (01~24) 與當前 Session 代碼 (S1/S2)
+    - 頂部橫軸：Run 1 ~ Run 7，下方對應 Mu 與 Beta 頻帶
+    - 斑馬紋：奇數 Run 欄位覆蓋 0.05 半透明深灰遮罩，灰色水平虛線置頂
     """
     os.makedirs(save_dir, exist_ok=True)
-    n_runs = len(all_runs_base)
-    if n_runs < 2:
+    order_str = get_subject_two_digit_order(raw_sub_id)
+    sess_num = "1" if "1" in str(session_str).lower() else "2"
+    sess_tag = f"Session {sess_num}"
+
+    # 定義兩列的動作類別 (Row 0: Left MI, Row 1: Right MI)
+    rows_info = [
+        {"class_id": 1, "label": "Left\n\nMI"},
+        {"class_id": 0, "label": "Right\n\nMI"}
+    ]
+
+    runs_base = session_data['base']
+    runs_task = session_data['task']
+    runs_y = session_data['y']
+    n_runs = len(runs_base)
+
+    if n_runs == 0:
         return
 
-    # 處理 6 Run 與自訂 Run 名稱順序
-    if run_names is None or len(run_names) != n_runs:
-        if n_runs == 6:
-            run_names = ["Run 1", "Run 2", "Run 4", "Run 5", "Run 6", "Run 7"]
-        else:
-            run_names = [f"Run {i+1}" for i in range(n_runs)]
+    tw = 560
+    th = 320
+    header_left_w = int(tw * 0.45)
+    header_top_h = int(th * 0.42)
+    cbar_w = int(tw * 0.28)
 
-    fig, axs = plt.subplots(4, n_runs, figsize=(3.6 * n_runs, 15.0))
-    fig.subplots_adjust(hspace=0.28, wspace=0.12, right=0.91, top=0.94, bottom=0.03)
+    grid_w = header_left_w + 7 * tw + cbar_w
+    grid_h = header_top_h + len(rows_info) * th
 
-    fig.suptitle(f"Neural Learning Progression (Mu & Beta Band ERD Topomap Evolution): {subject_label} | {session_label}",
-                 fontsize=15, fontweight='bold', y=0.98)
+    font_id = get_serif_font(int(th * 0.15))        # 左上角序號字體
+    font_sess_sub = get_serif_font(int(th * 0.12))  # 左上角 Session 標籤字體
+    font_run = get_serif_font(int(th * 0.13))       # Run 1~7 字體
+    font_band = get_serif_font(int(th * 0.12))      # Mu / Beta 字體
+    font_row = get_serif_font(int(th * 0.13))       # Left/Right MI 類別字體
 
-    for r in range(n_runs):
-        b_mu = all_runs_base[r]['base_mu']
-        t_mu = all_runs_task[r]['task_mu']
-        b_beta = all_runs_base[r]['base_beta']
-        t_beta = all_runs_task[r]['task_beta']
-        y_r = all_runs_y[r]
+    COLOR_WHITE = (255, 255, 255, 255)
+    COLOR_TEXT = (0, 0, 0)
+    COLOR_LINE = (195, 195, 195)
+    OVERLAY_ALPHA = int(255 * 0.05)
+    OVERLAY_COLOR = (0, 0, 0, OVERLAY_ALPHA)
 
-        l_mask = (y_r == 1)
-        r_mask = (y_r == 0)
+    canvas = Image.new('RGBA', (grid_w, grid_h), COLOR_WHITE)
 
-        # Mu 頻段 (8-13 Hz)
-        erd_mu_l = np.mean(calculate_erd_percentage(b_mu[l_mask], t_mu[l_mask]), axis=0) if np.sum(l_mask) > 0 else np.zeros(len(ch_names))
-        erd_mu_r = np.mean(calculate_erd_percentage(b_mu[r_mask], t_mu[r_mask]), axis=0) if np.sum(r_mask) > 0 else np.zeros(len(ch_names))
+    # 1. 依序繪製並貼上各 Run 的 Topomap 子圖
+    for row_idx, r_info in enumerate(rows_info):
+        target_class = r_info["class_id"]
 
-        # Beta 頻段 (13-30 Hz)
-        erd_beta_l = np.mean(calculate_erd_percentage(b_beta[l_mask], t_beta[l_mask]), axis=0) if np.sum(l_mask) > 0 else np.zeros(len(ch_names))
-        erd_beta_r = np.mean(calculate_erd_percentage(b_beta[r_mask], t_beta[r_mask]), axis=0) if np.sum(r_mask) > 0 else np.zeros(len(ch_names))
+        for r_idx in range(n_runs):
+            # 6 Run 空缺處理邏輯：強制空出 Run 3 (index 2)
+            if n_runs == 6:
+                target_col = r_idx if r_idx < 2 else r_idx + 1
+            else:
+                target_col = r_idx
 
-        r_title_name = run_names[r] if r < len(run_names) else f"Run {r+1}"
+            if target_col >= 7:
+                continue
 
-        # 第 1 列: Left Hand MI (Mu 8-13 Hz)
-        im = draw_single_topomap_ax(erd_mu_l, ch_names, axs[0, r], title=f"{r_title_name} (Left MI - Mu)",
-                                    vmax=vmax, show_names=True)
+            y_r = runs_y[r_idx]
+            cls_mask = (y_r == target_class)
 
-        # 第 2 列: Right Hand MI (Mu 8-13 Hz)
-        draw_single_topomap_ax(erd_mu_r, ch_names, axs[1, r], title=f"{r_title_name} (Right MI - Mu)",
-                               vmax=vmax, show_names=True)
+            if np.sum(cls_mask) == 0:
+                erd_mu = np.zeros(len(ch_names))
+                erd_beta = np.zeros(len(ch_names))
+            else:
+                b_mu = runs_base[r_idx]['base_mu'][cls_mask]
+                t_mu = runs_task[r_idx]['task_mu'][cls_mask]
+                b_beta = runs_base[r_idx]['base_beta'][cls_mask]
+                t_beta = runs_task[r_idx]['task_beta'][cls_mask]
+                erd_mu = np.mean(calculate_erd_percentage(b_mu, t_mu), axis=0)
+                erd_beta = np.mean(calculate_erd_percentage(b_beta, t_beta), axis=0)
 
-        # 第 3 列: Left Hand MI (Beta 13-30 Hz)
-        draw_single_topomap_ax(erd_beta_l, ch_names, axs[2, r], title=f"{r_title_name} (Left MI - Beta)",
-                               vmax=vmax, show_names=True)
+            cell_img = render_run_cell_image(erd_mu, erd_beta, ch_names, tw=tw, th=th, vmax=vmax)
+            paste_x = header_left_w + target_col * tw
+            paste_y = header_top_h + row_idx * th
+            canvas.paste(cell_img, (paste_x, paste_y), mask=cell_img.split()[3])
 
-        # 第 4 列: Right Hand MI (Beta 13-30 Hz)
-        draw_single_topomap_ax(erd_beta_r, ch_names, axs[3, r], title=f"{r_title_name} (Right MI - Beta)",
-                               vmax=vmax, show_names=True)
+        # 在每列右側貼上獨立垂直 Colorbar
+        cbar_img = render_vertical_colorbar(cbar_w=cbar_w, th=th, vmax=vmax)
+        cbar_x = header_left_w + 7 * tw
+        cbar_y = header_top_h + row_idx * th
+        canvas.paste(cbar_img, (cbar_x, cbar_y), mask=cbar_img.split()[3])
 
-    # 統一右側垂直 Colorbar
-    cbar_ax = fig.add_axes([0.93, 0.20, 0.02, 0.60])
-    cbar = fig.colorbar(im, cax=cbar_ax)
-    cbar.set_label('ERD / ERS (%)', fontsize=11, fontweight='bold')
+    # 2. 最上層半透明斑馬紋遮罩 (奇數欄位 Run 1, 3, 5, 7 覆蓋 0.05 深灰)
+    overlay = Image.new('RGBA', (grid_w, grid_h), (0, 0, 0, 0))
+    overlay_draw = ImageDraw.Draw(overlay)
+    for col in range(7):
+        if col % 2 == 0:
+            col_x = header_left_w + col * tw
+            overlay_draw.rectangle([col_x, 0, col_x + tw, grid_h], fill=OVERLAY_COLOR)
 
-    out_name = f"2_ERD_Topomap_Run_Evolution_{subject_label.replace(' ', '')}_{session_label.replace(' ', '')}.png"
+    canvas = Image.alpha_composite(canvas, overlay)
+    canvas = canvas.convert('RGB')
+    draw = ImageDraw.Draw(canvas)
+
+    # 3. 繪製最頂層文字標籤
+    # 左上角受試者序號 (01~24) 與 Session 標籤 (S1/S2)
+    draw.text((header_left_w // 2, header_top_h * 0.28), order_str, fill=COLOR_TEXT, font=font_id, anchor="mm")
+    draw.text((header_left_w // 2, header_top_h * 0.72), sess_tag, fill=COLOR_TEXT, font=font_sess_sub, anchor="mm")
+
+    # 頂部 Run 1~7 與 Mu / Beta 標籤
+    for col in range(7):
+        col_x = header_left_w + col * tw
+        run_cx = col_x + tw // 2
+        draw.text((run_cx, header_top_h * 0.28), f"Run {col + 1}", fill=COLOR_TEXT, font=font_run, anchor="mm")
+
+        mu_cx = col_x + int(tw * 0.25)
+        draw.text((mu_cx, header_top_h * 0.72), "Mu", fill=COLOR_TEXT, font=font_band, anchor="mm")
+
+        beta_cx = col_x + int(tw * 0.75)
+        draw.text((beta_cx, header_top_h * 0.72), "Beta", fill=COLOR_TEXT, font=font_band, anchor="mm")
+
+    # 左側縱軸標籤：分別標註 'Left\nMI' 與 'Right\nMI'
+    for row_idx, r_info in enumerate(rows_info):
+        row_y = header_top_h + row_idx * th
+        row_cy = row_y + th // 2
+        draw.text(
+            (header_left_w // 2, row_cy),
+            r_info["label"],
+            fill=COLOR_TEXT,
+            font=font_row,
+            anchor="mm",
+            align="center"
+        )
+
+    # 4. 繪製頂層水平灰色虛線
+    draw_horizontal_dashed_line(draw, header_top_h, grid_w - cbar_w, line_width=4, color=COLOR_LINE)
+    draw_horizontal_dashed_line(draw, header_top_h + th, grid_w - cbar_w, line_width=4, color=COLOR_LINE)
+
+    # 5. 輸出儲存
+    out_name = f"2_ERD_Topomap_Run_Evolution_Sub{raw_sub_id}_Session{sess_num}_Grid.png"
     out_path = os.path.join(save_dir, out_name)
-    plt.savefig(out_path, dpi=200, bbox_inches='tight')
-    plt.close(fig)
-    print(f"  ✓ [已生成] 學習演化 Topomap: {out_name}")
+    canvas.save(out_path, quality=95)
+    print(f"  ✓ [已生成] 學習演化總覽 Grid (Session {sess_num}): {out_name}")
 
-
-# ==============================================================================
-# 6. 【獨立圖表 3】差分空間地形圖 (Differential Topomap: Left - Right)
-# ==============================================================================
+# ==========================================
+# 6. 【獨立圖表 3】差分空間地形圖 (Differential Topomap)
+# ==========================================
 def plot_erd_topomap_differential(all_runs_base, all_runs_task, all_runs_y,
                                   ch_names, subject_label="Subject 24", session_label="Session 1",
                                   save_dir="output", vmax=60.0):
-    """
-    輸出圖 3：差分空間地形圖 (ΔERD = Left MI ERD - Right MI ERD)
-    """
     os.makedirs(save_dir, exist_ok=True)
-
     flat_base_mu = np.concatenate([r['base_mu'] for r in all_runs_base])
     flat_task_mu = np.concatenate([r['task_mu'] for r in all_runs_task])
     flat_base_beta = np.concatenate([r['base_beta'] for r in all_runs_base])
     flat_task_beta = np.concatenate([r['task_beta'] for r in all_runs_task])
     flat_y = np.concatenate(all_runs_y)
-
+    
     left_mask = (flat_y == 1)
     right_mask = (flat_y == 0)
 
@@ -438,239 +483,190 @@ def plot_erd_topomap_differential(all_runs_base, all_runs_task, all_runs_y,
 
     fig, axs = plt.subplots(1, 2, figsize=(11, 5.5))
     fig.subplots_adjust(wspace=0.20, right=0.88, top=0.82)
-
     fig.suptitle(f"Differential Spatial Topomap (ΔERD = Left Hand MI - Right Hand MI): {subject_label} | {session_label}",
                  fontsize=13.5, fontweight='bold', y=0.96)
 
-    im1 = draw_single_topomap_ax(diff_mu, ch_names, axs[0],
-                                 title="Mu Band (8-13 Hz) ΔERD", vmax=vmax, show_names=True)
-
-    im2 = draw_single_topomap_ax(diff_beta, ch_names, axs[1],
-                                 title="Beta Band (13-30 Hz) ΔERD", vmax=vmax, show_names=True)
+    im1 = draw_single_topomap_ax(diff_mu, ch_names, axs[0], title="Mu Band (8-13 Hz) ΔERD", vmax=vmax)
+    draw_single_topomap_ax(diff_beta, ch_names, axs[1], title="Beta Band (13-30 Hz) ΔERD", vmax=vmax)
 
     cbar_ax = fig.add_axes([0.91, 0.22, 0.025, 0.55])
     cbar = fig.colorbar(im1, cax=cbar_ax)
     cbar.set_label('Differential ΔERD (%)', fontsize=11, fontweight='bold')
 
     out_name = f"3_ERD_Topomap_Differential_{subject_label.replace(' ', '')}_{session_label.replace(' ', '')}.png"
-    out_path = os.path.join(save_dir, out_name)
-    plt.savefig(out_path, dpi=200, bbox_inches='tight')
+    plt.savefig(os.path.join(save_dir, out_name), dpi=200, bbox_inches='tight')
     plt.close(fig)
     print(f"  ✓ [已生成] 差分側化 Topomap: {out_name}")
 
-
-# ==============================================================================
-# 7. 單一受試者單一 Session 處理主流程
-# ==============================================================================
-def process_subject_session_topomap(data_dir, raw_sub_id, session_str, output_root,
-                                    channels="22", is_demo=False, task_range=(1.0, 3.5)):
-    """
-    處理單一受試者的 ERD Topomap 流程 (採用 Session Median Baseline)
-    """
+# ==========================================
+# 7. 單一受試者跨 Session 整合主流程
+# ==========================================
+def process_single_subject_pipeline(data_dir, raw_sub_id, output_root,
+                                    target_sessions=("s1", "s2"), is_demo=False,
+                                    task_range=(1.0, 3.5)):
     sub_dir_name = str(raw_sub_id)
     subject_out_dir = os.path.join(output_root, sub_dir_name)
     os.makedirs(subject_out_dir, exist_ok=True)
-
     subject_label = get_subject_display_name(raw_sub_id)
-    sess_num = "1" if "1" in str(session_str).lower() else "2"
-    session_label = f"Session {sess_num}"
 
-    all_runs_base = []
-    all_runs_task = []
-    all_runs_y = []
-    run_names = []
+    subject_session_data = {}
     ch_names = None
 
-    if is_demo:
-        # 生成擬真資料
-        ch_names = CH_NAMES_22
-        run_names = [f"Run {r+1}" for r in range(7)]
-        for r in range(7):
-            n_tr = 40
-            n_ch = 22
-            n_samp = 2000
-            fs = 500
+    for session_str in target_sessions:
+        all_runs_base = []
+        all_runs_task = []
+        all_runs_y = []
+        sess_num = "1" if "1" in str(session_str).lower() else "2"
+        session_label = f"Session {sess_num}"
 
-            x_fake = np.random.randn(n_tr, n_ch, n_samp) * 8.0
-            y_fake = np.random.choice([0, 1], size=n_tr)
+        if is_demo:
+            ch_names = CH_NAMES_22
+            n_runs = 6 if session_str == "s2" else 7  # 模擬 S2 缺 1 Run
+            for r in range(n_runs):
+                n_tr = 40
+                n_ch = 22
+                n_samp = 2000
+                fs = 500
+                x_fake = np.random.randn(n_tr, n_ch, n_samp) * 8.0
+                y_fake = np.random.choice([0, 1], size=n_tr)
+                
+                c3_idx = ch_names.index('C3')
+                c4_idx = ch_names.index('C4')
+                prog = (r + 1) / 7.0
+                time_vec = np.arange(n_samp) / fs
+                t_mask = (time_vec >= 1.0) & (time_vec <= 3.5)
+                for t in range(n_tr):
+                    if y_fake[t] == 1:
+                        x_fake[t, c4_idx, t_mask] *= (1.0 - 0.45 * prog)
+                    else:
+                        x_fake[t, c3_idx, t_mask] *= (1.0 - 0.45 * prog)
 
-            # 模擬對側 ERD 效果隨 Run 加強
-            c3_idx = ch_names.index('C3')
-            c4_idx = ch_names.index('C4')
-            prog = (r + 1) / 7.0
+                p_base_mu, p_task_mu = extract_session_median_powers(x_fake, fs=fs, band=(8, 13), task_range=task_range)
+                p_base_beta, p_task_beta = extract_session_median_powers(x_fake, fs=fs, band=(13, 30), task_range=task_range)
+                all_runs_base.append({'base_mu': p_base_mu, 'base_beta': p_base_beta})
+                all_runs_task.append({'task_mu': p_task_mu, 'task_beta': p_task_beta})
+                all_runs_y.append(y_fake)
+        else:
+            subject_dir = os.path.join(data_dir, str(raw_sub_id), session_str)
+            for r in range(1, 8):
+                run_dir = os.path.join(subject_dir, f"run{r}")
+                pt_candidates = [
+                    os.path.join(run_dir, "mi_22.pt"),
+                    os.path.join(run_dir, "mi_13.pt"),
+                    os.path.join(run_dir, "data.pt"),
+                    os.path.join(subject_dir, f"run_{r}.pt"),
+                ]
+                for pt_path in pt_candidates:
+                    if os.path.exists(pt_path):
+                        try:
+                            data = torch.load(pt_path, map_location='cpu')
+                            x_d = data.get('x_data', data.get('x'))
+                            y_d = data.get('y_data', data.get('y'))
+                            if isinstance(x_d, torch.Tensor): x_d = x_d.numpy()
+                            if isinstance(y_d, torch.Tensor): y_d = y_d.numpy()
+                            if x_d is not None and len(x_d) > 0:
+                                if ch_names is None:
+                                    ch_names = infer_channel_names(x_d.shape[1])
+                                p_base_mu, p_task_mu = extract_session_median_powers(x_d, fs=500, band=(8, 13), task_range=task_range)
+                                p_base_beta, p_task_beta = extract_session_median_powers(x_d, fs=500, band=(13, 30), task_range=task_range)
+                                all_runs_base.append({'base_mu': p_base_mu, 'base_beta': p_base_beta})
+                                all_runs_task.append({'task_mu': p_task_mu, 'task_beta': p_task_beta})
+                                all_runs_y.append(y_d)
+                                break
+                        except Exception:
+                            pass
 
-            time_vec = np.arange(n_samp) / fs
-            t_mask = (time_vec >= 1.0) & (time_vec <= 3.5)
-
-            for t in range(n_tr):
-                if y_fake[t] == 1:  # Left MI -> C4 ERD (能量下降)
-                    x_fake[t, c4_idx, t_mask] *= (1.0 - 0.45 * prog)
-                else:               # Right MI -> C3 ERD (能量下降)
-                    x_fake[t, c3_idx, t_mask] *= (1.0 - 0.45 * prog)
-
-            p_base_mu, p_task_mu = extract_session_median_powers(
-                x_fake, fs=fs, band=(8, 13), task_range=task_range
+        if len(all_runs_base) > 0:
+            subject_session_data[session_str] = {
+                'base': all_runs_base,
+                'task': all_runs_task,
+                'y': all_runs_y
+            }
+            # 輸出單一 Session 的獨立對比圖與差分圖
+            plot_erd_topomap_left_vs_right(
+                all_runs_base, all_runs_task, all_runs_y, ch_names,
+                subject_label=subject_label, session_label=session_label,
+                save_dir=subject_out_dir
             )
-            p_base_beta, p_task_beta = extract_session_median_powers(
-                x_fake, fs=fs, band=(13, 30), task_range=task_range
+            plot_erd_topomap_differential(
+                all_runs_base, all_runs_task, all_runs_y, ch_names,
+                subject_label=subject_label, session_label=session_label,
+                save_dir=subject_out_dir
             )
 
-            all_runs_base.append({'base_mu': p_base_mu, 'base_beta': p_base_beta})
-            all_runs_task.append({'task_mu': p_task_mu, 'task_beta': p_task_beta})
-            all_runs_y.append(y_fake)
-
-    else:
-        subject_dir = os.path.join(data_dir, str(raw_sub_id), session_str)
-
-        for r in range(1, 8):
-            run_dir = os.path.join(subject_dir, f"run{r}")
-            pt_candidates = [
-                os.path.join(run_dir, f"mi_{channels}.pt"),
-                os.path.join(run_dir, "mi_22.pt"),
-                os.path.join(run_dir, "mi_13.pt"),
-                os.path.join(run_dir, "data.pt"),
-                os.path.join(subject_dir, f"run_{r}.pt"),
-            ]
-
-            for pt_path in pt_candidates:
-                if os.path.exists(pt_path):
-                    try:
-                        data = torch.load(pt_path, map_location='cpu')
-                        x_d = data.get('x_data', data.get('x'))
-                        y_d = data.get('y_data', data.get('y'))
-                        if isinstance(x_d, torch.Tensor): x_d = x_d.numpy()
-                        if isinstance(y_d, torch.Tensor): y_d = y_d.numpy()
-
-                        if x_d is not None and len(x_d) > 0:
-                            if ch_names is None:
-                                ch_names = infer_channel_names(x_d.shape[1])
-
-                            p_base_mu, p_task_mu = extract_session_median_powers(
-                                x_d, fs=500, band=(8, 13), task_range=task_range
-                            )
-                            p_base_beta, p_task_beta = extract_session_median_powers(
-                                x_d, fs=500, band=(13, 30), task_range=task_range
-                            )
-
-                            all_runs_base.append({'base_mu': p_base_mu, 'base_beta': p_base_beta})
-                            all_runs_task.append({'task_mu': p_task_mu, 'task_beta': p_task_beta})
-                            all_runs_y.append(y_d)
-                            run_names.append(f"Run {r}")
-                            break
-                    except Exception:
-                        pass
-
-    if len(all_runs_base) == 0:
-        print(f"  ⚠️ [跳過] 未在受試者 {raw_sub_id} {session_str} 找到有效資料。")
+    if not subject_session_data:
+        print(f"  ⚠️ [跳過] 未在受試者 {raw_sub_id} 找到任何有效 Session 資料。")
         return False
 
-    # 若剛好讀到 6 個 Run 且命名為 Run 1~Run 6，自動對齊為 Run 2, Run 3, Run 4, Run 5, Run 6, Run 7
-    if len(run_names) == 6 and run_names == [f"Run {i}" for i in range(1, 7)]:
-        run_names = ["Run 2", "Run 3", "Run 4", "Run 5", "Run 6", "Run 7"]
+    # ★ 依序為各 Session 合成獨立總覽 Grid (左欄顯示 Left MI 與 Right MI)
+    print(f"  ▶ 正在為 {subject_label} 合成各 Session 專業 Paper Grid 學習軌跡圖...")
+    for sess_key in target_sessions:
+        if sess_key in subject_session_data:
+            generate_erd_session_run_grid(
+                session_data=subject_session_data[sess_key],
+                ch_names=ch_names,
+                raw_sub_id=raw_sub_id,
+                session_str=sess_key,
+                save_dir=subject_out_dir,
+                vmax=50.0
+            )
 
-    print(f"  ▶ 正在為 {subject_label} {session_label} 生成 Topomap...")
-
-    # 1. 輸出左右手 x 頻段 2x2 Topomap
-    plot_erd_topomap_left_vs_right(
-        all_runs_base, all_runs_task, all_runs_y, ch_names,
-        subject_label=subject_label, session_label=session_label,
-        save_dir=subject_out_dir
-    )
-
-    # 2. 輸出 Run 演化進程 Topomap
-    plot_erd_topomap_run_evolution(
-        all_runs_base, all_runs_task, all_runs_y, ch_names,
-        run_names=run_names,
-        subject_label=subject_label, session_label=session_label,
-        save_dir=subject_out_dir
-    )
-
-    # 3. 輸出差分側化 Topomap
-    plot_erd_topomap_differential(
-        all_runs_base, all_runs_task, all_runs_y, ch_names,
-        subject_label=subject_label, session_label=session_label,
-        save_dir=subject_out_dir
-    )
-
-    print(f"  ✓ 成功儲存所有 Topomap 至: {os.path.abspath(subject_out_dir)}")
     return True
 
-
-# ==============================================================================
+# ==========================================
 # 8. 主程式入口
-# ==============================================================================
+# ==========================================
 @tee_log()
 def main():
-    parser = argparse.ArgumentParser(description="BCI 全局 ERD Topomap 空間特徵與學習軌跡分析系統 (Session Median 專用版，支援 -all 全受試者批次輸出)")
+    parser = argparse.ArgumentParser(description="BCI 全局 ERD Topomap 空間特徵與學習軌跡分析系統 (Session 獨立總覽 + Left/Right MI 版)")
     parser.add_argument("-all", "--all", dest="all_subjects", action="store_true",
-                        help="批次生成所有 24 位受試者 (S1~S24, ID: 35~70) 的全部 Topomap")
+                        help="批次生成所有 24 位受試者 (S1~S24, ID: 35~70) 的全部 Topomap 與 Grid")
     parser.add_argument("--demo", action="store_true", help="執行 Demo 擬真合成資料模式")
     parser.add_argument("--data_dir", type=str, default=r"/mnt/project/MIEXP/DATA_Cygnus",
                         help="資料集根目錄路徑")
-    parser.add_argument("--channels", type=str, default="22", choices=["13", "22"],
-                        help="優先載入之通道模式 ('13' 或 '22')")
-    parser.add_argument("--subject", type=str, default="70",
-                        help="單一受試者 ID (例如: 70, 44, 37 或 S24, S8, S2)")
-    parser.add_argument("--ids", type=str, default=None,
-                        help="指定受試者清單，以逗號分隔 (例如: '35,37,70')")
+    parser.add_argument("--subject", type=str, default="44",
+                        help="單一受試者 ID (例如: 44, 70, 35 或 S8, S24)")
     parser.add_argument("--session", type=str, default="all", choices=["s1", "s2", "all"],
                         help="指定 Session (s1, s2, 或 all)")
     parser.add_argument("--output_dir", type=str, default="erd_topomap_output",
-                        help="圖表儲存根目錄 (內部會自動建立 \\<id>\\ 子資料夾)")
-
+                        help="圖表儲存根目錄 (內部會自動建立 <id>/ 子資料夾)")
     parser.add_argument("--task_start", type=float, default=1.0,
                         help="Task 任務視窗起始秒數 (預設 1.0s)")
     parser.add_argument("--task_end", type=float, default=3.5,
                         help="Task 任務視窗結束秒數 (預設 3.5s)")
-
     args = parser.parse_args()
 
     os.makedirs(args.output_dir, exist_ok=True)
     print("=" * 85)
-    print(f"🚀 BCI 全局 ERD Topomap 空間地形圖與學習軌跡分析系統 開始 | 時間: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
-    print("📌 基準策略: [Session Median (4s MI Data 中位數基準)]")
+    print(f"🚀 BCI 全局 ERD Topomap 分析系統 開始 | 時間: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+    print("📌 樣式規範: [Session 獨立總覽 | Left\\nMI 與 Right\\nMI 縱軸 | 0.05 頂層半透明斑馬紋 | 灰色虛線]")
     print("=" * 85)
 
-    if args.ids:
-        subjects_to_process = [x.strip() for x in args.ids.split(",") if x.strip()]
-        print(f"🌟 [指定清單模式] 即將處理 {len(subjects_to_process)} 位受試者: {subjects_to_process}")
-    elif args.all_subjects:
-        subjects_to_process = ALL_SUBJECT_IDS
-        print(f"🌟 [批次模式] 即將處理全部 24 位受試者: {subjects_to_process}")
-    else:
-        subjects_to_process = [args.subject]
-        print(f"🎯 [單一模式] 即將處理受試者: {args.subject}")
-
-    if args.session == "all":
-        sessions_to_process = ["s1", "s2"]
-    else:
-        sessions_to_process = [args.session]
-
-    total_tasks = len(subjects_to_process) * len(sessions_to_process)
-    completed_count = 0
-
+    subjects_to_process = ALL_SUBJECT_IDS if args.all_subjects else [args.subject]
+    target_sessions = ("s1", "s2") if args.session == "all" else (args.session,)
     task_range = (args.task_start, args.task_end)
 
+    success_count = 0
     for s_idx, sub_id in enumerate(subjects_to_process):
-        print(f"\n{'='*30} [{s_idx+1}/{len(subjects_to_process)}] 受試者 ID: {sub_id} ({SUBJECT_MAP.get(sub_id, sub_id)}) {'='*30}")
-        for sess in sessions_to_process:
-            success = process_subject_session_topomap(
-                data_dir=args.data_dir,
-                raw_sub_id=sub_id,
-                session_str=sess,
-                output_root=args.output_dir,
-                channels=args.channels,
-                is_demo=args.demo,
-                task_range=task_range
-            )
-            if success:
-                completed_count += 1
+        disp_name = get_subject_display_name(sub_id)
+        order_code = get_subject_two_digit_order(sub_id)
+        print(f"\n{'='*30} [{s_idx+1}/{len(subjects_to_process)}] 受試者 ID: {sub_id} ({disp_name}, 序號: {order_code}) {'='*30}")
+        
+        ok = process_single_subject_pipeline(
+            data_dir=args.data_dir,
+            raw_sub_id=sub_id,
+            output_root=args.output_dir,
+            target_sessions=target_sessions,
+            is_demo=args.demo,
+            task_range=task_range
+        )
+        if ok:
+            success_count += 1
 
     print("\n" + "=" * 85)
-    print(f"🎉 全部 Topomap 處理完畢！成功完成 {completed_count}/{total_tasks} 個 Session 分析。")
-    print(f"📁 輸出圖表已儲存至: {os.path.abspath(args.output_dir)}/<id>/")
+    print(f"🎉 全部 Topomap 處理完畢！成功完成 {success_count}/{len(subjects_to_process)} 位受試者之分析。")
+    print(f"📁 圖表與總覽 Grid 已儲存至: {os.path.abspath(args.output_dir)}/<id>/")
     print("=" * 85)
-
 
 if __name__ == "__main__":
     main()

@@ -1,5 +1,7 @@
 """
-20260504 內容，修改寬的地方可以參考 (XBrainlab 的)
+繪製 Saliency Map 與 PSD 綜合圖 (Mu / Beta 獨立色階無 Colorbar 版)
+- 移除右側 Colorbar，版面自動水平居中放大
+- Mu 與 Beta 各自擁有獨立動態範圍 (vlim)，確保雙頻帶對比度清晰
 """
 import os
 import sys
@@ -9,6 +11,7 @@ import mne
 import pickle
 from scipy import signal
 
+# 防止終端編碼問題
 if hasattr(sys.stdout, 'reconfigure'):
     try:
         sys.stdout.reconfigure(encoding='utf-8', errors='replace')
@@ -22,21 +25,16 @@ from XBrainLab.visualization.base import Visualizer
 class SaliencyPSDVisualizer(Visualizer):
     """
     客製化視覺化器：
-    提供 plot_combined_for_label() 繪製特定 Label 的複合圖表
-    (包含 Alpha/Beta Topomap 與 Saliency PSD)
+    繪製特定 Label 的複合圖表 (Mu/Beta Topomap 與 Saliency PSD)
     """
-
     def _compute_saliency_psd(self, method, label_idx, n_fft=None):
         """計算指定類別 Saliency 的 PSD"""
         saliency = self.get_saliency(method, label_idx)
         sfreq = self.epoch_data.sfreq
-
         if len(saliency) == 0:
             return None, None
-
         if n_fft is None:
             n_fft = int(sfreq)  # 1Hz 解析度
-
         # 使用 Welch 方法計算 PSD
         freqs, psd = signal.welch(saliency, fs=sfreq, nperseg=n_fft, axis=-1)
         return freqs, psd
@@ -46,11 +44,10 @@ class SaliencyPSDVisualizer(Visualizer):
                                 show_y_axis=True, normalize=False):
         """
         繪製單一 Label 的綜合圖表
-        上方：Alpha (8-13Hz) 與 Beta (13-30Hz) 的 Saliency Topomap
+        上方：Mu (8-13Hz) 與 Beta (13-30Hz) 的 Saliency Topomap (獨立色階，無 Colorbar)
         下方：Saliency PSD
         """
         plt.rcParams.update({'font.size': font_size})
-
         try:
             class_name = self.epoch_data.label_map[label_idx]
         except (KeyError, IndexError):
@@ -66,93 +63,100 @@ class SaliencyPSDVisualizer(Visualizer):
             return
 
         # ==========================================
-        # 設定版面配置 (精算比例以放大 Topomap 並容納大字體)
+        # 1. 頻帶能量計算與【獨立色彩尺度 (vlim)】設定
         # ==========================================
-        fig = plt.figure(figsize=(12, 10))
+        # Mu 頻帶 (8-13 Hz)
+        mu_mask = (freqs >= 8) & (freqs <= 13)
+        mu_power = psd[:, :, mu_mask].mean(axis=-1).mean(axis=0)
 
-        # 1. 下方長方形 PSD 
-        # [left, bottom, width, height]
-        ax_psd = fig.add_axes([0.12, 0.12, 0.84, 0.25])     
-        
-        # 2. 左上 Alpha (X 軸範圍：0.12 ~ 0.54，左側與 PSD 切齊)
-        # ax_alpha = fig.add_axes([0.12, 0.38, 0.42, 0.60])
-        ax_alpha = fig.add_axes([0.00, 0.42, 0.50, 0.60])  # 13, x, y, w, h
-        # ax_alpha = fig.add_axes([0.04, 0.42, 0.42, 0.60])  # 22, x, y, w, h
-
-        # 3. 右上 Beta (X 軸範圍：0.54 ~ 0.96，右側與 PSD 切齊)
-        # ax_beta = fig.add_axes([0.54, 0.38, 0.42, 0.60])
-        ax_beta = fig.add_axes([0.50, 0.42, 0.50, 0.60]) # 13
-        # ax_beta = fig.add_axes([0.54, 0.42, 0.42, 0.60])  # 22, x, y, w, h
-
-        cmap = 'Reds' if use_abs else 'RdBu_r'
-
-        # ------------------------------------------
-        # 1. 繪製左上角：Alpha Band (8-13Hz) Topomap
-        # ------------------------------------------
-        alpha_mask = (freqs >= 8) & (freqs <= 13)
-        alpha_power = psd[:, :, alpha_mask].mean(axis=-1).mean(axis=0)
-
-        if normalize:
-            a_min, a_max = np.min(alpha_power), np.max(alpha_power)
-            if a_max > a_min:
-                alpha_power = (alpha_power - a_min) / (a_max - a_min)
-            else:
-                alpha_power = np.zeros_like(alpha_power)
-
-        im_alpha, _ = mne.viz.plot_topomap(
-            alpha_power, pos=positions[:, :2], axes=ax_alpha,
-            show=False, cmap=cmap, names=chs
-        )
-
-        # ------------------------------------------
-        # 2. 繪製右上角：Beta Band (13-30Hz) Topomap
-        # ------------------------------------------
+        # Beta 頻帶 (13-30 Hz)
         beta_mask = (freqs >= 13) & (freqs <= 30)
         beta_power = psd[:, :, beta_mask].mean(axis=-1).mean(axis=0)
 
+        cmap = 'Reds' if use_abs else 'RdBu_r'
+
         if normalize:
+            m_min, m_max = np.min(mu_power), np.max(mu_power)
+            mu_power = (mu_power - m_min) / (m_max - m_min) if m_max > m_min else np.zeros_like(mu_power)
+            vlim_mu = (0.0, 1.0)
+
             b_min, b_max = np.min(beta_power), np.max(beta_power)
-            if b_max > b_min:
-                beta_power = (beta_power - b_min) / (b_max - b_min)
+            beta_power = (beta_power - b_min) / (b_max - b_min) if b_max > b_min else np.zeros_like(beta_power)
+            vlim_beta = (0.0, 1.0)
+        else:
+            # Mu 與 Beta 各自使用獨立的極值，確保雙頻帶細節完整展開
+            if use_abs:
+                vmax_mu = np.max(mu_power)
+                vmin_mu = 0.0
+                vmax_beta = np.max(beta_power)
+                vmin_beta = 0.0
             else:
-                beta_power = np.zeros_like(beta_power)
+                max_val_mu = np.max(np.abs(mu_power))
+                vmin_mu, vmax_mu = -max_val_mu, max_val_mu
+                max_val_beta = np.max(np.abs(beta_power))
+                vmin_beta, vmax_beta = -max_val_beta, max_val_beta
+
+            if vmax_mu == vmin_mu:
+                vmax_mu = vmin_mu + 1e-6
+            if vmax_beta == vmin_beta:
+                vmax_beta = vmin_beta + 1e-6
+
+            vlim_mu = (vmin_mu, vmax_mu)
+            vlim_beta = (vmin_beta, vmax_beta)
+
+        # ==========================================
+        # 2. 設定版面配置 (移除 Colorbar 後水平對稱展開)
+        # ==========================================
+        fig = plt.figure(figsize=(12, 10))
+
+        # 1. 下方長方形 PSD [left, bottom, width, height]
+        ax_psd = fig.add_axes([0.10, 0.10, 0.82, 0.26])   
+        
+        # 2. 左上 Mu Topomap (水平居中對稱，寬度擴展至 0.42)
+        ax_mu = fig.add_axes([0.05, 0.42, 0.42, 0.52])
+
+        # 3. 右上 Beta Topomap (水平居中對稱，寬度擴展至 0.42)
+        ax_beta = fig.add_axes([0.53, 0.42, 0.42, 0.52])
+
+        # ------------------------------------------
+        # 3. 繪製 Topomap (套用獨立 vlim，不產生 Colorbar)
+        # ------------------------------------------
+        im_mu, _ = mne.viz.plot_topomap(
+            mu_power, pos=positions[:, :2], axes=ax_mu,
+            vlim=vlim_mu, show=False, cmap=cmap, names=chs
+        )
+        ax_mu.set_title("Mu (8-13 Hz)", pad=10)
 
         im_beta, _ = mne.viz.plot_topomap(
             beta_power, pos=positions[:, :2], axes=ax_beta,
-            show=False, cmap=cmap, names=chs
+            vlim=vlim_beta, show=False, cmap=cmap, names=chs
         )
+        ax_beta.set_title("Beta (13-30 Hz)", pad=10)
 
         # ------------------------------------------
-        # 3. 繪製下方長方形：Saliency PSD
+        # 4. 繪製下方長方形：Saliency PSD
         # ------------------------------------------
         avg_psd = psd.mean(axis=0)
-
         if normalize:
             p_min, p_max = np.min(avg_psd), np.max(avg_psd)
-            if p_max > p_min:
-                avg_psd = (avg_psd - p_min) / (p_max - p_min)
-            else:
-                avg_psd = np.zeros_like(avg_psd)
+            avg_psd = (avg_psd - p_min) / (p_max - p_min) if p_max > p_min else np.zeros_like(avg_psd)
 
         mask = (freqs >= fmin) & (freqs <= fmax)
-
-        # 畫所有 Channel 的灰色細線
+        # 畫所有 Channel 灰色細線與平均紅色粗線
         ax_psd.plot(freqs[mask], avg_psd[:, mask].T, color='gray', alpha=0.3, linewidth=0.5)
-        # 畫平均紅色粗線
         ax_psd.plot(freqs[mask], avg_psd[:, mask].mean(axis=0), color='red', linewidth=2.5, label='Mean Saliency')
 
-        # 美化與背景色塊
-        ax_psd.axvspan(8, 13, color='skyblue', alpha=0.15, label='Alpha (8-13)')
+        # 標註頻帶色塊
+        ax_psd.axvspan(8, 13, color='skyblue', alpha=0.15, label='Mu (8-13)')
         ax_psd.axvspan(13, 30, color='salmon', alpha=0.1, label='Beta (13-30)')
-
         ax_psd.set_xlabel("Frequency (Hz)")
         ax_psd.set_xlim(fmin, fmax)
 
         if normalize:
             ax_psd.set_ylim(-0.05, 1.05)
-            y_label = "Power"
+            y_label = "Normalized Power"
         else:
-            y_label = "Power"
+            y_label = "Saliency Power"
 
         if show_y_axis:
             ax_psd.set_ylabel(y_label)
@@ -164,10 +168,10 @@ class SaliencyPSDVisualizer(Visualizer):
         ax_psd.grid(True, alpha=0.3)
 
         # ------------------------------------------
-        # 4. 輸出與儲存
+        # 5. 輸出與儲存
         # ------------------------------------------
         if save_path:
-            plt.savefig(save_path, dpi=300)
+            plt.savefig(save_path, dpi=300, bbox_inches='tight')
             plt.close(fig)
         else:
             plt.show()
@@ -175,63 +179,38 @@ class SaliencyPSDVisualizer(Visualizer):
 # ==========================================
 # 伺服器主程式 (批次執行版本)
 # ==========================================
-import argparse
-
 def main():
-    parser = argparse.ArgumentParser(description="批次繪製 Saliency Map 與 PSD 綜合圖")
-    parser.add_argument("--channels", type=str, default="13", choices=["13", "22"], help="通道設定 ('13' 或 '22')")
-    parser.add_argument("--base_dir", type=str, default=r"/mnt/project/MIEXP/DATA_Cygnus", help="資料集存放根目錄")
-    parser.add_argument("--output_dir", type=str, default=None, help="圖表輸出目錄 (預設為 Saliency 或 Saliency_13)")
-    parser.add_argument("--ids", type=str, default=None, help="受試者清單 (逗號分隔，留空為全部 24 人)")
-    parser.add_argument("--sessions", type=str, default="s1,s2", help="Session 清單 (逗號分隔)")
-    parser.add_argument("--font_size", type=int, default=30, help="字型大小 (預設 30)")
-    parser.add_argument("--no_normalize", action="store_true", help="關閉 0~1 正規化")
-    args = parser.parse_args()
-
-    FONT_SIZE = args.font_size
+    # ===== 參數設定 =====
+    FONT_SIZE = 24
     USE_ABS = True
     SHOW_Y_AXIS = True
-    NORMALIZE = not args.no_normalize
-    is_13 = (args.channels == "13")
+    NORMALIZE = False   # 設為 False 呈現真實能量
+    is_13 = False       # True: 13 channel; False: 22 channel
+    # ===================
 
     montage = mne.channels.make_standard_montage('standard_1020')
-
-    base_dir = args.base_dir
-    if args.ids:
-        ids = [i.strip() for i in args.ids.split(",") if i.strip()]
-    else:
-        ids = ["35", "37", "38", "40", "41", "42", "43", "44", "45", "47", "48", "50", "51", "52", "54", "55", "57", "58", "63", "64", "65", "68", "69", "70"]
-    sessions = [s.strip() for s in args.sessions.split(",") if s.strip()]
-    runs = [f"run{i}" for i in range(1, 8)]  # run1 ~ run7
-    root_out = args.output_dir if args.output_dir else ("Saliency_13" if is_13 else "Saliency")
-
-    if not os.path.exists(base_dir):
-        print(f"⚠️ [提示] 找不到資料集目錄: {base_dir}")
-        print(f"👉 請透過 --base_dir <路徑> 指定您的 EEG 資料資料夾。")
-        return
+    base_dir = r"/mnt/project/MIEXP/DATA_Cygnus"
+    ids = ["35", "37", "38", "40", "41", "42", "43", "44", "45", "47", "48", "50", "51", "52", "54", "55", "57", "58", "63", "64", "65", "68", "69", "70"]
+    sessions = ["s1", "s2"]
+    runs = [f"run{i}" for i in range(1, 8)]
 
     for TARGET_CLASS in range(2):
-        
-        # 迴圈讀取所有 Subject, Session
         for subject_id in ids:
             for session in sessions:
-                # 建立分層的儲存路徑
-                output_dir = os.path.join(root_out, subject_id, session, f"combined_output_{TARGET_CLASS}")
+                if is_13:
+                    output_dir = os.path.join("Saliency_13_Raw", subject_id, session, f"combined_output_{TARGET_CLASS}")
+                else:
+                    output_dir = os.path.join("Saliency_22_Raw", subject_id, session, f"combined_output_{TARGET_CLASS}")
                 
                 os.makedirs(output_dir, exist_ok=True)
                 
-                # 準備要檢查的資料夾清單
                 dirs_to_check = []
-                
-                # 1. 包含 Session 層級 (e.g., .../DATA_Cygnus/35/s1)
                 session_dir = os.path.join(base_dir, subject_id, session)
                 dirs_to_check.append(("session", session_dir))
                 
-                # 2. 包含 Run 層級 (e.g., .../DATA_Cygnus/35/s1/run1 ~ run7)
                 for run in runs:
                     dirs_to_check.append((run, os.path.join(session_dir, run)))
                     
-                # 遍歷這些路徑進行繪圖
                 for level_name, data_dir in dirs_to_check:
                     if is_13:
                         load_path_eval = os.path.join(data_dir, "13_eval_record.pkl")
@@ -239,34 +218,30 @@ def main():
                     else:
                         load_path_eval = os.path.join(data_dir, "22_eval_record.pkl")
                         load_path_xb = os.path.join(data_dir, "22_eval_xb_epochs.pkl")
-                    # 若檔案不存在則跳過
+                    
                     if not os.path.exists(load_path_eval) or not os.path.exists(load_path_xb):
                         continue
 
-                    # 根據是 Session 層級還是 Run 層級來命名圖片
                     if level_name == "session":
                         file_name_safe = f"Sub{subject_id}_{session}"
                     else:
                         file_name_safe = f"Sub{subject_id}_{session}_{level_name}"
                     
                     try:
-                        print(f"處理中: {file_name_safe} (Class {TARGET_CLASS})...")
+                        print(f"處理中: {file_name_safe} (Class {TARGET_CLASS}, Norm={NORMALIZE})...")
                         with open(load_path_eval, 'rb') as f:
                             eval_record = pickle.load(f)
                         with open(load_path_xb, 'rb') as f:
                             xb_epochs = pickle.load(f)
 
-                        # 套用 Montage 座表
+                        # 套用 Montage 座標
                         ch_names = xb_epochs.get_channel_names()
                         pos = [montage.get_positions()['ch_pos'].get(ch, [0, 0, 0]) for ch in ch_names]
                         xb_epochs.set_channels(ch_names, np.array(pos))
 
                         viz = SaliencyPSDVisualizer(eval_record, xb_epochs)
-
-                        # 儲存路徑
                         save_file = os.path.join(output_dir, f"{file_name_safe}_c{TARGET_CLASS}_combined.png")
 
-                        # 一次產生並儲存綜合圖表
                         viz.plot_combined_for_label(
                             label_idx=TARGET_CLASS,
                             method="Gradient",
@@ -277,7 +252,6 @@ def main():
                             show_y_axis=SHOW_Y_AXIS,
                             normalize=NORMALIZE
                         )
-
                     except Exception as e:
                         print(f"處理 {file_name_safe} 時發生錯誤: {e}")
                         continue

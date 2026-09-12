@@ -132,7 +132,18 @@ def main():
     if not xb_ok:
         print("   ℹ️ [提示] 若需要使用 XBrainLab 繪製 Saliency Map 空間拓撲圖，可將 XBrainLab 加入 PYTHONPATH。")
 
-    # 6. 總結
+    # 6. 音樂情緒與風格一致性分析 (選用)
+    print_section("6. 音樂情緒與風格分析庫 (選用)")
+    music_packages = [
+        ("requests", "Requests (模型下載器)"),
+        ("essentia", "Essentia (音訊特徵提取)"),
+        ("tensorflow", "TensorFlow (MusiCNN 推論)"),
+    ]
+    for pkg, disp in music_packages:
+        m_ok, m_msg = check_module(pkg, disp)
+        print(m_msg)
+
+    # 7. 總結
     print_section("檢測結果總結")
     if all_passed:
         print("🎉 恭喜！所有核心依賴與執行環境檢測全數通過，您可以正常運行 VR-BCI 系統與分析管線！")
