@@ -93,7 +93,11 @@ public class AutoSaber : MonoBehaviour
                     if (count1 >= totalWeight / 2f)
                     {
                         saber = saberL;
-                        if (note_x == 1) correct_hit += 1;
+                        if (note_x == 1)
+                        {
+                            correct_hit += 1;
+                            if (GM.setLogCallback != null) GM.setLogCallback.Invoke(0, LogType.Cut); // 紀錄 log 到 log.txt
+                        }
                         else
                         {
                             wrong_hit += 1;
@@ -108,7 +112,11 @@ public class AutoSaber : MonoBehaviour
                             wrong_hit += 1;
                             break; // 揮砍錯誤跳過 // 只提供正向 feedback
                         }
-                        else correct_hit += 1;
+                        else
+                        {
+                            correct_hit += 1;
+                            if (GM.setLogCallback != null) GM.setLogCallback.Invoke(0, LogType.Cut); // 紀錄 log 到 log.txt
+                        }
                     }
 
                 }

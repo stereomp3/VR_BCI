@@ -53,7 +53,7 @@ public class SaberSlicer : MonoBehaviour
             if (slicedHull == null) Debug.LogError("Fallback slice also failed.");
         }
         Destroy(target);
-        if (GM.setLogCallback != null) GM.setLogCallback.Invoke(0, LogType.Cut); // ¬ö¿ý log ¨ì log.txt
+        // if (GM.setLogCallback != null) GM.setLogCallback.Invoke(0, LogType.Cut); // ¬ö¿ý log ¨ì log.txt
         if (slicedHull != null)
         {
             GameObject upperHull = slicedHull.CreateUpperHull(target, crossSectionMaterial);
